@@ -1,0 +1,16 @@
+{
+  "slot": "gst_certificate",
+  "file": "fix/gst_certificate.pdf",
+  "doc_type": "gst_certificate",
+  "fields": {
+    "gstin": "09AAKFG2290B1ZK",
+    "legal_name": "GANGA OFFICE SUPPLIES LLP",
+    "state": "Uttar Pradesh",
+    "trade_name": "GANGA OFFICE SUPPLIES"
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "gemini-3.6-flash was busy, read by gemini-3-flash-preview. This is a fictional specimen document.",
+  "ms": 3428,
+  "model": "gemini-3-flash-preview"
+}

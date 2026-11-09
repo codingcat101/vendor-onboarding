@@ -1,0 +1,16 @@
+{
+  "slot": "gst_certificate",
+  "file": "docs/gst_certificate.pdf",
+  "doc_type": "gst_certificate",
+  "fields": {
+    "gstin": "33AADCA5530R1ZI",
+    "legal_name": "APEX FACILITY SERVICES PRIVATE LIMITED",
+    "state": "Tamil Nadu",
+    "trade_name": "APEX FACILITY SERVICES"
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "gemini-3.6-flash was busy, read by gemini-3-flash-preview. The document is a fictional specimen for software testing.",
+  "ms": 7238,
+  "model": "gemini-3-flash-preview"
+}

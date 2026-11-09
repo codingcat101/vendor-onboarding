@@ -1,0 +1,16 @@
+{
+  "slot": "gst_certificate",
+  "file": "docs/gst_certificate.pdf",
+  "doc_type": "gst_certificate",
+  "fields": {
+    "gstin": "19AAJFL6618D1Z7",
+    "legal_name": "LOTUS PRINT HOUSE",
+    "state": "West Bengal",
+    "trade_name": "LOTUS PRINT HOUSE"
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "gemini-3.6-flash was busy, read by gemini-3-flash-preview. This is a fictional specimen GST registration certificate.",
+  "ms": 6847,
+  "model": "gemini-3-flash-preview"
+}

@@ -1,0 +1,16 @@
+{
+  "slot": "gst_certificate",
+  "file": "docs/gst_certificate.pdf",
+  "doc_type": "gst_certificate",
+  "fields": {
+    "gstin": "24CHNPG4410L1ZD",
+    "legal_name": "NEHA GUPTA",
+    "state": "Gujarat",
+    "trade_name": "GUPTA TRADING COMPANY"
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "gemini-3.6-flash was busy, read by gemini-3-flash-preview. This is a specimen GST registration certificate.",
+  "ms": 3499,
+  "model": "gemini-3-flash-preview"
+}

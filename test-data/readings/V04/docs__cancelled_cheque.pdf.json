@@ -1,0 +1,16 @@
+{
+  "slot": "cancelled_cheque",
+  "file": "docs/cancelled_cheque.pdf",
+  "doc_type": "cancelled_cheque",
+  "fields": {
+    "account_holder": "SHARMA TRADERS",
+    "account_number": "4103413164752553",
+    "bank_name": "PUNJAB NATIONAL BANK",
+    "ifsc": "PUNB0016400"
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "gemini-3.6-flash was busy, read by gemini-3-flash-preview. This is a specimen cancelled cheque.",
+  "ms": 4621,
+  "model": "gemini-3-flash-preview"
+}

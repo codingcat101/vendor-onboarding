@@ -1,0 +1,33 @@
+{
+  "scenario_id": "V02",
+  "legal_name": "Nimbus Cloud Analytics Private Limited",
+  "trade_name": "Nimbus Analytics",
+  "constitution": "Private Limited Company",
+  "country": "IN",
+  "address": {
+    "line1": "Office 602, Tower B, Baner Road",
+    "city": "Pune",
+    "state": "Maharashtra",
+    "pincode": "411045"
+  },
+  "gstin": "27AAGCN7314Q1ZV",
+  "pan": "AAGCN7314Q",
+  "contact": {
+    "name": "Meera Joshi",
+    "email": "finance@nimbusanalytics.example",
+    "phone": "+91 98220 44567"
+  },
+  "bank": {
+    "account_holder": "NIMBUS CLOUD ANALYTICS PRIVATE LIMITED",
+    "account_number": "754235116155",
+    "ifsc": "ICIC0000039",
+    "bank_name": "ICICI Bank"
+  },
+  "cin": "U72900MH2019PTC324517",
+  "documents": {
+    "gst_certificate": "docs/gst_certificate.pdf",
+    "pan_card": "docs/pan_card.pdf",
+    "cancelled_cheque": "docs/cancelled_cheque.pdf",
+    "incorporation_certificate": "docs/incorporation_certificate.pdf"
+  }
+}

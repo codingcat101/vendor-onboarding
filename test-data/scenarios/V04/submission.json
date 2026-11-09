@@ -1,0 +1,30 @@
+{
+  "scenario_id": "V04",
+  "legal_name": "Rakesh Sharma",
+  "trade_name": "Sharma Trading Co.",
+  "constitution": "Proprietorship",
+  "country": "IN",
+  "address": {
+    "line1": "Shop 41, Bhagirath Palace, Chandni Chowk",
+    "city": "New Delhi",
+    "state": "Delhi",
+    "pincode": "110006"
+  },
+  "gstin": "07BQRPS6127K1Z3",
+  "pan": "BQRPS6127K",
+  "contact": {
+    "name": "Rakesh Sharma",
+    "email": "sharmatrading@mail.example",
+    "phone": "+91 98110 32456"
+  },
+  "bank": {
+    "account_holder": "SHARMA TRADERS",
+    "account_number": "4103413164752553",
+    "ifsc": "PUNB0016400",
+    "bank_name": "Punjab National Bank"
+  },
+  "documents": {
+    "gst_certificate": "docs/gst_certificate.pdf",
+    "cancelled_cheque": "docs/cancelled_cheque.pdf"
+  }
+}

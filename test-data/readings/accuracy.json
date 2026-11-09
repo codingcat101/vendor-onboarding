@@ -1,0 +1,271 @@
+{
+  "documents": 23,
+  "doc_type_accuracy": 1,
+  "field_accuracy": 0.9868421052631579,
+  "fields_total": 76,
+  "fields_correct": 75,
+  "avg_seconds": 6.528739130434783,
+  "models_tried": [
+    "gemini-3.6-flash",
+    "gemini-3-flash-preview",
+    "gemini-3.1-flash-lite"
+  ],
+  "run_at": "2026-11-09T17:43:21.303Z",
+  "rows": [
+    {
+      "model": "gemini-3.6-flash",
+      "doc": "V01/docs/gst_certificate.pdf",
+      "type_ok": true,
+      "got_type": "gst_certificate",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 0.95,
+      "ms": 5428
+    },
+    {
+      "model": "gemini-3.1-flash-lite",
+      "doc": "V01/docs/pan_card.pdf",
+      "type_ok": true,
+      "got_type": "pan_card",
+      "fields": 2,
+      "correct": 1,
+      "misses": [
+        "name: expected \"KAVERI PACKAGING SOLUTIONS PRIVATE LIMITED\", read \"\""
+      ],
+      "conf": 1,
+      "ms": 7842
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "doc": "V01/docs/cancelled_cheque.pdf",
+      "type_ok": true,
+      "got_type": "cancelled_cheque",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 1,
+      "ms": 7382
+    },
+    {
+      "model": "gemini-3.6-flash",
+      "doc": "V02/docs/gst_certificate.pdf",
+      "type_ok": true,
+      "got_type": "gst_certificate",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 0.95,
+      "ms": 5720
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "doc": "V02/docs/pan_card.pdf",
+      "type_ok": true,
+      "got_type": "pan_card",
+      "fields": 2,
+      "correct": 2,
+      "misses": [],
+      "conf": 0.95,
+      "ms": 5086
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "doc": "V02/docs/cancelled_cheque.pdf",
+      "type_ok": true,
+      "got_type": "cancelled_cheque",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 1,
+      "ms": 6872
+    },
+    {
+      "model": "gemini-3.1-flash-lite",
+      "doc": "V02/docs/incorporation_certificate.pdf",
+      "type_ok": true,
+      "got_type": "incorporation_certificate",
+      "fields": 3,
+      "correct": 3,
+      "misses": [],
+      "conf": 1,
+      "ms": 1305
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "doc": "V03/docs/gst_certificate.pdf",
+      "type_ok": true,
+      "got_type": "invoice",
+      "fields": 1,
+      "correct": 1,
+      "misses": [],
+      "conf": 0.95,
+      "ms": 6511
+    },
+    {
+      "model": "gemini-3.6-flash",
+      "doc": "V03/docs/cancelled_cheque.pdf",
+      "type_ok": true,
+      "got_type": "cancelled_cheque",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 0.95,
+      "ms": 16459
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "doc": "V03/fix/gst_certificate.pdf",
+      "type_ok": true,
+      "got_type": "gst_certificate",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 1,
+      "ms": 3428
+    },
+    {
+      "model": "gemini-3.6-flash",
+      "doc": "V04/docs/gst_certificate.pdf",
+      "type_ok": true,
+      "got_type": "gst_certificate",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 1,
+      "ms": 7142
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "doc": "V04/docs/cancelled_cheque.pdf",
+      "type_ok": true,
+      "got_type": "cancelled_cheque",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 1,
+      "ms": 4621
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "doc": "V05/docs/gst_certificate.pdf",
+      "type_ok": true,
+      "got_type": "gst_certificate",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 1,
+      "ms": 3499
+    },
+    {
+      "model": "gemini-3.6-flash",
+      "doc": "V05/docs/cancelled_cheque.jpg",
+      "type_ok": true,
+      "got_type": "cancelled_cheque",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 0.95,
+      "ms": 7184
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "doc": "V06/docs/gst_certificate.pdf",
+      "type_ok": true,
+      "got_type": "gst_certificate",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 1,
+      "ms": 7238
+    },
+    {
+      "model": "gemini-3.1-flash-lite",
+      "doc": "V06/docs/pan_card.pdf",
+      "type_ok": true,
+      "got_type": "pan_card",
+      "fields": 2,
+      "correct": 2,
+      "misses": [],
+      "conf": 1,
+      "ms": 11854
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "doc": "V06/docs/cancelled_cheque.pdf",
+      "type_ok": true,
+      "got_type": "cancelled_cheque",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 0.95,
+      "ms": 3161
+    },
+    {
+      "model": "gemini-3.1-flash-lite",
+      "doc": "V07/docs/gst_certificate.pdf",
+      "type_ok": true,
+      "got_type": "gst_certificate",
+      "fields": 2,
+      "correct": 2,
+      "misses": [],
+      "conf": 1,
+      "ms": 2763
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "doc": "V07/docs/pan_card.pdf",
+      "type_ok": true,
+      "got_type": "pan_card",
+      "fields": 2,
+      "correct": 2,
+      "misses": [],
+      "conf": 0.9,
+      "ms": 3821
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "doc": "V07/docs/cancelled_cheque.pdf",
+      "type_ok": true,
+      "got_type": "cancelled_cheque",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 1,
+      "ms": 12317
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "doc": "V08/docs/gst_certificate.pdf",
+      "type_ok": true,
+      "got_type": "gst_certificate",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 1,
+      "ms": 6847
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "doc": "V08/docs/pan_card.pdf",
+      "type_ok": true,
+      "got_type": "pan_card",
+      "fields": 2,
+      "correct": 2,
+      "misses": [],
+      "conf": 0.95,
+      "ms": 3367
+    },
+    {
+      "model": "gemini-3.1-flash-lite",
+      "doc": "V08/fix/cancelled_cheque.pdf",
+      "type_ok": true,
+      "got_type": "cancelled_cheque",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 1,
+      "ms": 10314
+    }
+  ]
+}

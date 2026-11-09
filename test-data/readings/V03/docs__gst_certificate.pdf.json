@@ -1,0 +1,13 @@
+{
+  "slot": "gst_certificate",
+  "file": "docs/gst_certificate.pdf",
+  "doc_type": "invoice",
+  "fields": {
+    "gstin": "09AAKFG2290B1ZK"
+  },
+  "confidence": 0.95,
+  "source": "ai",
+  "notes": "gemini-3.6-flash was busy, read by gemini-3-flash-preview. The document is a tax invoice.",
+  "ms": 6511,
+  "model": "gemini-3-flash-preview"
+}

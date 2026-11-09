@@ -1,0 +1,16 @@
+{
+  "slot": "cancelled_cheque",
+  "file": "docs/cancelled_cheque.pdf",
+  "doc_type": "cancelled_cheque",
+  "fields": {
+    "account_holder": "KAVERI PACKAGING SOLUTIONS PRIVATE LIMITED",
+    "account_number": "48908386379402",
+    "bank_name": "HDFC BANK",
+    "ifsc": "HDFC0000062"
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "gemini-3.6-flash was busy, read by gemini-3-flash-preview. This is a specimen cancelled cheque.",
+  "ms": 7382,
+  "model": "gemini-3-flash-preview"
+}

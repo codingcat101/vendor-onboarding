@@ -1,0 +1,16 @@
+{
+  "slot": "gst_certificate",
+  "file": "docs/gst_certificate.pdf",
+  "doc_type": "gst_certificate",
+  "fields": {
+    "gstin": "29AAJCK4821M1Z1",
+    "legal_name": "KAVERI PACKAGING SOLUTIONS PRIVATE LIMITED",
+    "state": "Karnataka",
+    "trade_name": "KAVERI PACKAGING"
+  },
+  "confidence": 0.95,
+  "source": "ai",
+  "notes": "The document is a sample/specimen GST registration certificate.",
+  "ms": 5428,
+  "model": "gemini-3.6-flash"
+}

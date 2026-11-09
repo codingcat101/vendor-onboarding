@@ -1,0 +1,15 @@
+{
+  "slot": "gst_certificate",
+  "file": "docs/gst_certificate.pdf",
+  "doc_type": "gst_certificate",
+  "fields": {
+    "gstin": "27AAHCD7781F1ZC",
+    "legal_name": "DECCAN ENGINEERING PRIVATE LIMITED",
+    "trade_name": "DECCAN ENGINEERING"
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "gemini-3.6-flash was busy, read by gemini-3.1-flash-lite. This is a specimen GST registration certificate.",
+  "ms": 2763,
+  "model": "gemini-3.1-flash-lite"
+}

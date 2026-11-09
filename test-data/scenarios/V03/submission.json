@@ -1,0 +1,30 @@
+{
+  "scenario_id": "V03",
+  "legal_name": "Ganga Office Supplies LLP",
+  "trade_name": "Ganga Office Supplies",
+  "constitution": "Limited Liability Partnership",
+  "country": "IN",
+  "address": {
+    "line1": "22/7 Hazratganj Market Road",
+    "city": "Lucknow",
+    "state": "Uttar Pradesh",
+    "pincode": "226001"
+  },
+  "gstin": "09AAKFG2290B1ZK",
+  "pan": "AAKFG2290B",
+  "contact": {
+    "name": "Sunil Mishra",
+    "email": "sunil@gangaoffice.example",
+    "phone": "+91 94150 77881"
+  },
+  "bank": {
+    "account_holder": "GANGA OFFICE SUPPLIES LLP",
+    "account_number": "50781618495",
+    "ifsc": "SBIN0001520",
+    "bank_name": "State Bank of India"
+  },
+  "documents": {
+    "gst_certificate": "docs/gst_certificate.pdf",
+    "cancelled_cheque": "docs/cancelled_cheque.pdf"
+  }
+}

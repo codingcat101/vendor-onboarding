@@ -1,0 +1,14 @@
+{
+  "slot": "pan_card",
+  "file": "docs/pan_card.pdf",
+  "doc_type": "pan_card",
+  "fields": {
+    "name": "APEX FACILITY SERVICES PRIVATE LIMITED",
+    "pan": "AADCA5530R"
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "gemini-3.6-flash was busy, read by gemini-3.1-flash-lite. The document is a specimen PAN card.",
+  "ms": 11854,
+  "model": "gemini-3.1-flash-lite"
+}

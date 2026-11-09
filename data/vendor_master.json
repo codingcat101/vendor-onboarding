@@ -1,0 +1,282 @@
+[
+  {
+    "vendor_id": "VM-0001",
+    "legal_name": "Velocity Logistics Private Limited",
+    "gstin": "33ZUPCV7543M1ZS",
+    "pan": "ZUPCV7543M",
+    "state": "Tamil Nadu",
+    "bank": {
+      "account_number": "204332181960013",
+      "ifsc": "UTIB0000565",
+      "bank_name": "Axis Bank"
+    },
+    "status": "ACTIVE",
+    "onboarded_on": "2023-09-16"
+  },
+  {
+    "vendor_id": "VM-0002",
+    "legal_name": "Deccan Engineering Private Limited",
+    "gstin": "27AAHCD7781F1ZC",
+    "pan": "AAHCD7781F",
+    "state": "Maharashtra",
+    "bank": {
+      "account_number": "20122691669784",
+      "ifsc": "HDFC0001234",
+      "bank_name": "HDFC Bank"
+    },
+    "status": "ACTIVE",
+    "onboarded_on": "2022-11-18"
+  },
+  {
+    "vendor_id": "VM-0003",
+    "legal_name": "Sahyadri Foods Private Limited",
+    "gstin": "27JWLCS2827K1ZF",
+    "pan": "JWLCS2827K",
+    "state": "Maharashtra",
+    "bank": {
+      "account_number": "727048281489",
+      "ifsc": "ICIC0001052",
+      "bank_name": "ICICI Bank"
+    },
+    "status": "ACTIVE",
+    "onboarded_on": "2023-06-25"
+  },
+  {
+    "vendor_id": "VM-0004",
+    "legal_name": "Bluewave IT Services Private Limited",
+    "gstin": "29FTSCB1009V1ZL",
+    "pan": "FTSCB1009V",
+    "state": "Karnataka",
+    "bank": {
+      "account_number": "67015430391171",
+      "ifsc": "HDFC0001234",
+      "bank_name": "HDFC Bank"
+    },
+    "status": "ACTIVE",
+    "onboarded_on": "2023-11-16"
+  },
+  {
+    "vendor_id": "VM-0005",
+    "legal_name": "Mehta Chemicals",
+    "gstin": "24TFJFM9645V1ZC",
+    "pan": "TFJFM9645V",
+    "state": "Gujarat",
+    "bank": {
+      "account_number": "73834657871",
+      "ifsc": "SBIN0005943",
+      "bank_name": "State Bank of India"
+    },
+    "status": "ACTIVE",
+    "onboarded_on": "2023-02-11"
+  },
+  {
+    "vendor_id": "VM-0006",
+    "legal_name": "Coromandel Textiles Private Limited",
+    "gstin": "33AUTCC4770U1ZH",
+    "pan": "AUTCC4770U",
+    "state": "Tamil Nadu",
+    "bank": {
+      "account_number": "4010310518347",
+      "ifsc": "CNRB0000418",
+      "bank_name": "Canara Bank"
+    },
+    "status": "ACTIVE",
+    "onboarded_on": "2023-12-19"
+  },
+  {
+    "vendor_id": "VM-0007",
+    "legal_name": "Arora Electricals",
+    "gstin": "07URHPA8749P1ZK",
+    "pan": "URHPA8749P",
+    "state": "Delhi",
+    "bank": {
+      "account_number": "4116566701065133",
+      "ifsc": "PUNB0016400",
+      "bank_name": "Punjab National Bank"
+    },
+    "status": "ACTIVE",
+    "onboarded_on": "2025-03-14"
+  },
+  {
+    "vendor_id": "VM-0008",
+    "legal_name": "Brightline Security Services LLP",
+    "gstin": "36FJQFB5092C1ZQ",
+    "pan": "FJQFB5092C",
+    "state": "Telangana",
+    "bank": {
+      "account_number": "8810801326",
+      "ifsc": "KKBK0000958",
+      "bank_name": "Kotak Mahindra Bank"
+    },
+    "status": "ACTIVE",
+    "onboarded_on": "2025-04-28"
+  },
+  {
+    "vendor_id": "VM-0009",
+    "legal_name": "Konark Furniture Works",
+    "gstin": "19NBFFK7209A1Z6",
+    "pan": "NBFFK7209A",
+    "state": "West Bengal",
+    "bank": {
+      "account_number": "74746872343",
+      "ifsc": "SBIN0005943",
+      "bank_name": "State Bank of India"
+    },
+    "status": "ACTIVE",
+    "onboarded_on": "2022-12-11"
+  },
+  {
+    "vendor_id": "VM-0010",
+    "legal_name": "Greenleaf Facility Management Private Limited",
+    "gstin": "29BBUCG8811S1Z9",
+    "pan": "BBUCG8811S",
+    "state": "Karnataka",
+    "bank": {
+      "account_number": "920812191361939",
+      "ifsc": "UTIB0000565",
+      "bank_name": "Axis Bank"
+    },
+    "status": "ACTIVE",
+    "onboarded_on": "2022-07-22"
+  },
+  {
+    "vendor_id": "VM-0011",
+    "legal_name": "Indus Courier Services Private Limited",
+    "gstin": "07UUSCI6183J1Z6",
+    "pan": "UUSCI6183J",
+    "state": "Delhi",
+    "bank": {
+      "account_number": "453462475107",
+      "ifsc": "ICIC0001052",
+      "bank_name": "ICICI Bank"
+    },
+    "status": "ACTIVE",
+    "onboarded_on": "2022-09-07"
+  },
+  {
+    "vendor_id": "VM-0012",
+    "legal_name": "Narmada Paper Mills Limited",
+    "gstin": "24SJECN6718C1ZP",
+    "pan": "SJECN6718C",
+    "state": "Gujarat",
+    "bank": {
+      "account_number": "45427849808412",
+      "ifsc": "HDFC0000240",
+      "bank_name": "HDFC Bank"
+    },
+    "status": "ACTIVE",
+    "onboarded_on": "2022-02-24"
+  },
+  {
+    "vendor_id": "VM-0013",
+    "legal_name": "Pinnacle Event Solutions LLP",
+    "gstin": "27TEJFP5616V1ZI",
+    "pan": "TEJFP5616V",
+    "state": "Maharashtra",
+    "bank": {
+      "account_number": "4534874016",
+      "ifsc": "KKBK0000958",
+      "bank_name": "Kotak Mahindra Bank"
+    },
+    "status": "ACTIVE",
+    "onboarded_on": "2022-01-11"
+  },
+  {
+    "vendor_id": "VM-0014",
+    "legal_name": "Saraswati Printers",
+    "gstin": "09EWJPS3647Z1ZV",
+    "pan": "EWJPS3647Z",
+    "state": "Uttar Pradesh",
+    "bank": {
+      "account_number": "88680112805",
+      "ifsc": "SBIN0005943",
+      "bank_name": "State Bank of India"
+    },
+    "status": "ACTIVE",
+    "onboarded_on": "2025-03-02"
+  },
+  {
+    "vendor_id": "VM-0015",
+    "legal_name": "Techvista Software Private Limited",
+    "gstin": "36KMBCT6862G1Z6",
+    "pan": "KMBCT6862G",
+    "state": "Telangana",
+    "bank": {
+      "account_number": "41586923226025",
+      "ifsc": "HDFC0000240",
+      "bank_name": "HDFC Bank"
+    },
+    "status": "ACTIVE",
+    "onboarded_on": "2023-05-06"
+  },
+  {
+    "vendor_id": "VM-0016",
+    "legal_name": "Hooghly Steel Traders",
+    "gstin": "19YDNFH1634R1ZU",
+    "pan": "YDNFH1634R",
+    "state": "West Bengal",
+    "bank": {
+      "account_number": "4375433036541458",
+      "ifsc": "PUNB0016400",
+      "bank_name": "Punjab National Bank"
+    },
+    "status": "ACTIVE",
+    "onboarded_on": "2024-01-04"
+  },
+  {
+    "vendor_id": "VM-0017",
+    "legal_name": "Malabar Spices Exports Private Limited",
+    "gstin": "33JFUCM5349B1ZU",
+    "pan": "JFUCM5349B",
+    "state": "Tamil Nadu",
+    "bank": {
+      "account_number": "2965569816934",
+      "ifsc": "CNRB0000418",
+      "bank_name": "Canara Bank"
+    },
+    "status": "ACTIVE",
+    "onboarded_on": "2025-01-17"
+  },
+  {
+    "vendor_id": "VM-0018",
+    "legal_name": "Royal Catering Services",
+    "gstin": "07TXZPR4228M1ZY",
+    "pan": "TXZPR4228M",
+    "state": "Delhi",
+    "bank": {
+      "account_number": "71595148465",
+      "ifsc": "SBIN0000001",
+      "bank_name": "State Bank of India"
+    },
+    "status": "ACTIVE",
+    "onboarded_on": "2024-09-05"
+  },
+  {
+    "vendor_id": "VM-0019",
+    "legal_name": "Everest Power Systems Private Limited",
+    "gstin": "29GPXCE7211X1Z8",
+    "pan": "GPXCE7211X",
+    "state": "Karnataka",
+    "bank": {
+      "account_number": "399468044369",
+      "ifsc": "ICIC0000104",
+      "bank_name": "ICICI Bank"
+    },
+    "status": "ACTIVE",
+    "onboarded_on": "2025-08-15"
+  },
+  {
+    "vendor_id": "VM-0020",
+    "legal_name": "Unity Medical Supplies LLP",
+    "gstin": "24XGSFU8752Z1ZJ",
+    "pan": "XGSFU8752Z",
+    "state": "Gujarat",
+    "bank": {
+      "account_number": "314895134332003",
+      "ifsc": "UTIB0000072",
+      "bank_name": "Axis Bank"
+    },
+    "status": "ACTIVE",
+    "onboarded_on": "2022-08-14"
+  }
+]

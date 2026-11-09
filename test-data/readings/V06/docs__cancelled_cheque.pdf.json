@@ -1,0 +1,16 @@
+{
+  "slot": "cancelled_cheque",
+  "file": "docs/cancelled_cheque.pdf",
+  "doc_type": "cancelled_cheque",
+  "fields": {
+    "account_holder": "APEX FACILITY SERVICES PVT LTD",
+    "account_number": "204332181960013",
+    "bank_name": "AXIS BANK",
+    "ifsc": "UTIB0000017"
+  },
+  "confidence": 0.95,
+  "source": "ai",
+  "notes": "gemini-3.6-flash was busy, read by gemini-3-flash-preview. The document is a cancelled specimen cheque.",
+  "ms": 3161,
+  "model": "gemini-3-flash-preview"
+}

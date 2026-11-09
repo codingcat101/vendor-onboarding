@@ -1,0 +1,31 @@
+{
+  "scenario_id": "V07",
+  "legal_name": "Orion Engineering Works Private Limited",
+  "trade_name": "Orion Engineering",
+  "constitution": "Private Limited Company",
+  "country": "IN",
+  "address": {
+    "line1": "SF 112, Avinashi Road, Peelamedu",
+    "city": "Coimbatore",
+    "state": "Tamil Nadu",
+    "pincode": "641004"
+  },
+  "gstin": "27AAHCD7781F1ZC",
+  "pan": "AAKCO3302H",
+  "contact": {
+    "name": "Vignesh R",
+    "email": "accounts@orioneng.example",
+    "phone": "+91 99440 23419"
+  },
+  "bank": {
+    "account_holder": "ORION ENGINEERING WORKS PRIVATE LIMITED",
+    "account_number": "9350305641395",
+    "ifsc": "CNRB0000418",
+    "bank_name": "Canara Bank"
+  },
+  "documents": {
+    "gst_certificate": "docs/gst_certificate.pdf",
+    "pan_card": "docs/pan_card.pdf",
+    "cancelled_cheque": "docs/cancelled_cheque.pdf"
+  }
+}

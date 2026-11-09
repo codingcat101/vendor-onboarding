@@ -1,0 +1,16 @@
+{
+  "slot": "cancelled_cheque",
+  "file": "docs/cancelled_cheque.pdf",
+  "doc_type": "cancelled_cheque",
+  "fields": {
+    "account_holder": "ORION ENGINEERING WORKS PRIVATE LIMITED",
+    "account_number": "9350305641395",
+    "bank_name": "CANARA BANK",
+    "ifsc": "CNRB0000418"
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "gemini-3.6-flash was busy, read by gemini-3-flash-preview. The document is a specimen cancelled cheque for Orion Engineering Works Private Limited.",
+  "ms": 12317,
+  "model": "gemini-3-flash-preview"
+}

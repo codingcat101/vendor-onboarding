@@ -1,0 +1,16 @@
+{
+  "slot": "cancelled_cheque",
+  "file": "docs/cancelled_cheque.pdf",
+  "doc_type": "cancelled_cheque",
+  "fields": {
+    "account_holder": "GANGA OFFICE SUPPLIES LLP",
+    "account_number": "50781618495",
+    "bank_name": "STATE BANK OF INDIA",
+    "ifsc": "SBIN0001520"
+  },
+  "confidence": 0.95,
+  "source": "ai",
+  "notes": "Clear specimen cancelled cheque image.",
+  "ms": 16459,
+  "model": "gemini-3.6-flash"
+}

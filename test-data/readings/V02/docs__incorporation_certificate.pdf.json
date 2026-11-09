@@ -1,0 +1,15 @@
+{
+  "slot": "incorporation_certificate",
+  "file": "docs/incorporation_certificate.pdf",
+  "doc_type": "incorporation_certificate",
+  "fields": {
+    "cin": "U72900MH2019PTC324517",
+    "legal_name": "NIMBUS CLOUD ANALYTICS PRIVATE LIMITED",
+    "pan": "AAGCN7314Q"
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "gemini-3.6-flash was busy, read by gemini-3.1-flash-lite. This is a specimen certificate of incorporation.",
+  "ms": 1305,
+  "model": "gemini-3.1-flash-lite"
+}

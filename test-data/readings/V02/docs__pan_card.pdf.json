@@ -1,0 +1,14 @@
+{
+  "slot": "pan_card",
+  "file": "docs/pan_card.pdf",
+  "doc_type": "pan_card",
+  "fields": {
+    "name": "NIMBUS CLOUD ANALYTICS PRIVATE LIMITED",
+    "pan": "AAGCN7314Q"
+  },
+  "confidence": 0.95,
+  "source": "ai",
+  "notes": "gemini-3.6-flash was busy, read by gemini-3-flash-preview. The document is a specimen PAN card.",
+  "ms": 5086,
+  "model": "gemini-3-flash-preview"
+}

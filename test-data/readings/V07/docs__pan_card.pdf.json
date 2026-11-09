@@ -1,0 +1,14 @@
+{
+  "slot": "pan_card",
+  "file": "docs/pan_card.pdf",
+  "doc_type": "pan_card",
+  "fields": {
+    "name": "ORION ENGINEERING WORKS PRIVATE LIMITED",
+    "pan": "AAKCO3302H"
+  },
+  "confidence": 0.9,
+  "source": "ai",
+  "notes": "gemini-3.6-flash was busy, read by gemini-3-flash-preview. This is a specimen PAN card document.",
+  "ms": 3821,
+  "model": "gemini-3-flash-preview"
+}

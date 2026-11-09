@@ -1,0 +1,31 @@
+{
+  "scenario_id": "V01",
+  "legal_name": "Kaveri Packaging Solutions Private Limited",
+  "trade_name": "Kaveri Packaging",
+  "constitution": "Private Limited Company",
+  "country": "IN",
+  "address": {
+    "line1": "No. 14, 3rd Cross, Peenya Industrial Area",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "pincode": "560058"
+  },
+  "gstin": "29AAJCK4821M1Z1",
+  "pan": "AAJCK4821M",
+  "contact": {
+    "name": "Anil Kumar R",
+    "email": "accounts@kaveripack.example",
+    "phone": "+91 98450 11223"
+  },
+  "bank": {
+    "account_holder": "KAVERI PACKAGING SOLUTIONS PRIVATE LIMITED",
+    "account_number": "48908386379402",
+    "ifsc": "HDFC0000062",
+    "bank_name": "HDFC Bank"
+  },
+  "documents": {
+    "gst_certificate": "docs/gst_certificate.pdf",
+    "pan_card": "docs/pan_card.pdf",
+    "cancelled_cheque": "docs/cancelled_cheque.pdf"
+  }
+}

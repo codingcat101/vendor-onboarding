@@ -1,0 +1,30 @@
+{
+  "scenario_id": "V05",
+  "legal_name": "Neha Gupta",
+  "trade_name": "Gupta Trading Company",
+  "constitution": "Proprietorship",
+  "country": "IN",
+  "address": {
+    "line1": "12 Relief Road, Near Kalupur Gate",
+    "city": "Ahmedabad",
+    "state": "Gujarat",
+    "pincode": "380001"
+  },
+  "gstin": "24CHNPG4410L1ZD",
+  "pan": "CHNPG4410L",
+  "contact": {
+    "name": "Neha Gupta",
+    "email": "guptatrading@mail.example",
+    "phone": "+91 97250 61234"
+  },
+  "bank": {
+    "account_holder": "GUPTA TRADERS",
+    "account_number": "5192832764",
+    "ifsc": "KKBK0000182",
+    "bank_name": "Kotak Mahindra Bank"
+  },
+  "documents": {
+    "gst_certificate": "docs/gst_certificate.pdf",
+    "cancelled_cheque": "docs/cancelled_cheque.jpg"
+  }
+}

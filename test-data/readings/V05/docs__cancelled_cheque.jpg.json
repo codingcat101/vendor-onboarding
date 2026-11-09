@@ -1,0 +1,16 @@
+{
+  "slot": "cancelled_cheque",
+  "file": "docs/cancelled_cheque.jpg",
+  "doc_type": "cancelled_cheque",
+  "fields": {
+    "account_holder": "GUPTA TRADERS",
+    "account_number": "5192832764",
+    "bank_name": "KOTAK MAHINDRA BANK",
+    "ifsc": "KKBK0000182"
+  },
+  "confidence": 0.95,
+  "source": "ai",
+  "notes": "Cancelled cheque with specimen watermark clearly legible.",
+  "ms": 7184,
+  "model": "gemini-3.6-flash"
+}

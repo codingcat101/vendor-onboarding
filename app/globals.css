@@ -1,0 +1,190 @@
+@import "tailwindcss";
+
+/* Case-file palette: cheque paper, ink, and rubber-stamp colours. */
+:root {
+  --paper: #f5f7f2;
+  --sheet: #ffffff;
+  --ink: #1c2433;
+  --ink-2: #4a5468;
+  --ink-3: #7c8597;
+  --rule: #d9ded3;
+  --rule-strong: #b9c0b2;
+  --tint: #ebefe6;
+
+  --approve: #1d7348;
+  --approve-bg: #e5f2ea;
+  --reject: #b3261e;
+  --reject-bg: #fbe9e7;
+  --review: #3949a8;
+  --review-bg: #e9ebf8;
+  --wait: #995a06;
+  --wait-bg: #fbf0dd;
+
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-sheet: var(--sheet);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-tint: var(--tint);
+  --color-approve: var(--approve);
+  --color-approve-bg: var(--approve-bg);
+  --color-reject: var(--reject);
+  --color-reject-bg: var(--reject-bg);
+  --color-review: var(--review);
+  --color-review-bg: var(--review-bg);
+  --color-wait: var(--wait);
+  --color-wait-bg: var(--wait-bg);
+  --font-sans: "Schibsted Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+html,
+body {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--review);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* Identifiers (GSTIN, PAN, account numbers) are read character by character. */
+.id {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  letter-spacing: 0.02em;
+}
+
+/* Form fields */
+.field {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--rule-strong);
+  background: var(--sheet);
+  border-radius: 4px;
+  padding: 7px 10px;
+  font: inherit;
+  color: var(--ink);
+}
+.field:focus {
+  outline: 2px solid var(--review);
+  outline-offset: -1px;
+  border-color: transparent;
+}
+.label {
+  display: block;
+  font-size: 13px;
+  color: var(--ink-2);
+  margin-bottom: 4px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 4px;
+  padding: 7px 14px;
+  font-weight: 600;
+  font-size: 14px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn:hover {
+  background: #2c374d;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-quiet {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--rule-strong);
+}
+.btn-quiet:hover {
+  background: var(--tint);
+}
+
+/* The rubber stamp: the one loud element in the interface. */
+.stamp {
+  display: inline-block;
+  border: 3px solid currentColor;
+  border-radius: 6px;
+  padding: 6px 14px 4px;
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  transform: rotate(-4deg);
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1.35'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mask-size: 240px 120px;
+}
+.stamp small {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  text-transform: none;
+}
+.stamp-land {
+  animation: stamp-land 420ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+@keyframes stamp-land {
+  0% {
+    opacity: 0;
+    transform: rotate(-4deg) scale(1.9);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-4deg) scale(1);
+  }
+}
+
+.reveal {
+  animation: reveal 260ms ease-out both;
+}
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+
+@keyframes pulse-dot {
+  50% {
+    opacity: 0.25;
+  }
+}
+.pulse {
+  animation: pulse-dot 1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stamp-land,
+  .reveal,
+  .pulse {
+    animation: none;
+  }
+}

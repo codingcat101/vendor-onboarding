@@ -1,0 +1,30 @@
+{
+  "scenario_id": "V08",
+  "legal_name": "Lotus Print House",
+  "trade_name": "Lotus Print House",
+  "constitution": "Partnership Firm",
+  "country": "IN",
+  "address": {
+    "line1": "5 Lalbazar Street, 2nd Floor",
+    "city": "Kolkata",
+    "state": "West Bengal",
+    "pincode": "700001"
+  },
+  "gstin": "19AAJFL6618D1Z7",
+  "pan": "AAJFL6618D",
+  "contact": {
+    "name": "Debashis Roy",
+    "email": "lotusprint@mail.example",
+    "phone": "+91 98300 55120"
+  },
+  "bank": {
+    "account_holder": "LOTUS PRINT HOUSE",
+    "account_number": "47672423884",
+    "ifsc": "SBIN0000691",
+    "bank_name": "State Bank of India"
+  },
+  "documents": {
+    "gst_certificate": "docs/gst_certificate.pdf",
+    "pan_card": "docs/pan_card.pdf"
+  }
+}

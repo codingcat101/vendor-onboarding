@@ -1,0 +1,16 @@
+{
+  "slot": "cancelled_cheque",
+  "file": "fix/cancelled_cheque.pdf",
+  "doc_type": "cancelled_cheque",
+  "fields": {
+    "account_holder": "LOTUS PRINT HOUSE",
+    "account_number": "47672423884",
+    "bank_name": "STATE BANK OF INDIA",
+    "ifsc": "SBIN0000691"
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "gemini-3.6-flash was busy, read by gemini-3.1-flash-lite. The document is a cancelled cheque.",
+  "ms": 10314,
+  "model": "gemini-3.1-flash-lite"
+}

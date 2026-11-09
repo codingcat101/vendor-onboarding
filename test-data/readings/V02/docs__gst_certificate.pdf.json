@@ -1,0 +1,16 @@
+{
+  "slot": "gst_certificate",
+  "file": "docs/gst_certificate.pdf",
+  "doc_type": "gst_certificate",
+  "fields": {
+    "gstin": "27AAGCN7314Q1ZV",
+    "legal_name": "NIMBUS CLOUD ANALYTICS PRIVATE LIMITED",
+    "state": "Maharashtra",
+    "trade_name": "NIMBUS ANALYTICS"
+  },
+  "confidence": 0.95,
+  "source": "ai",
+  "notes": "Fictional specimen document for testing.",
+  "ms": 5720,
+  "model": "gemini-3.6-flash"
+}

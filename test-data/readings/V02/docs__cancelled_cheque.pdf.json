@@ -1,0 +1,16 @@
+{
+  "slot": "cancelled_cheque",
+  "file": "docs/cancelled_cheque.pdf",
+  "doc_type": "cancelled_cheque",
+  "fields": {
+    "account_holder": "NIMBUS CLOUD ANALYTICS PRIVATE LIMITED",
+    "account_number": "754235116155",
+    "bank_name": "ICICI BANK",
+    "ifsc": "ICIC0000039"
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "gemini-3.6-flash was busy, read by gemini-3-flash-preview. Specimen cancelled cheque for NIMBUS CLOUD ANALYTICS PRIVATE LIMITED.",
+  "ms": 6872,
+  "model": "gemini-3-flash-preview"
+}

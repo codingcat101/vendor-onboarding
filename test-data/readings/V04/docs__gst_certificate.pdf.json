@@ -1,0 +1,16 @@
+{
+  "slot": "gst_certificate",
+  "file": "docs/gst_certificate.pdf",
+  "doc_type": "gst_certificate",
+  "fields": {
+    "gstin": "07BQRPS6127K1Z3",
+    "legal_name": "RAKESH SHARMA",
+    "state": "Delhi",
+    "trade_name": "SHARMA TRADING CO."
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "Specimen GST registration certificate.",
+  "ms": 7142,
+  "model": "gemini-3.6-flash"
+}

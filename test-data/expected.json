@@ -1,0 +1,257 @@
+{
+  "V01": {
+    "title": "Happy path — Standard tier, everything checks out",
+    "tier": "STANDARD",
+    "status": "APPROVED",
+    "reasons": [],
+    "fix_documents": {},
+    "document_truth": {
+      "docs/gst_certificate.pdf": {
+        "doc_type": "gst_certificate",
+        "gstin": "29AAJCK4821M1Z1",
+        "legal_name": "KAVERI PACKAGING SOLUTIONS PRIVATE LIMITED",
+        "trade_name": "KAVERI PACKAGING",
+        "state": "Karnataka"
+      },
+      "docs/pan_card.pdf": {
+        "doc_type": "pan_card",
+        "pan": "AAJCK4821M",
+        "name": "KAVERI PACKAGING SOLUTIONS PRIVATE LIMITED"
+      },
+      "docs/cancelled_cheque.pdf": {
+        "doc_type": "cancelled_cheque",
+        "account_number": "48908386379402",
+        "ifsc": "HDFC0000062",
+        "account_holder": "KAVERI PACKAGING SOLUTIONS PRIVATE LIMITED",
+        "bank_name": "HDFC BANK"
+      }
+    }
+  },
+  "V02": {
+    "title": "Happy path — Strategic tier: passes all checks, still needs human sign-off",
+    "tier": "STRATEGIC",
+    "status": "PENDING_INTERNAL",
+    "reasons": [
+      "STRATEGIC_SIGNOFF_REQUIRED"
+    ],
+    "fix_documents": {},
+    "document_truth": {
+      "docs/gst_certificate.pdf": {
+        "doc_type": "gst_certificate",
+        "gstin": "27AAGCN7314Q1ZV",
+        "legal_name": "NIMBUS CLOUD ANALYTICS PRIVATE LIMITED",
+        "trade_name": "NIMBUS ANALYTICS",
+        "state": "Maharashtra"
+      },
+      "docs/pan_card.pdf": {
+        "doc_type": "pan_card",
+        "pan": "AAGCN7314Q",
+        "name": "NIMBUS CLOUD ANALYTICS PRIVATE LIMITED"
+      },
+      "docs/cancelled_cheque.pdf": {
+        "doc_type": "cancelled_cheque",
+        "account_number": "754235116155",
+        "ifsc": "ICIC0000039",
+        "account_holder": "NIMBUS CLOUD ANALYTICS PRIVATE LIMITED",
+        "bank_name": "ICICI BANK"
+      },
+      "docs/incorporation_certificate.pdf": {
+        "doc_type": "incorporation_certificate",
+        "cin": "U72900MH2019PTC324517",
+        "legal_name": "NIMBUS CLOUD ANALYTICS PRIVATE LIMITED",
+        "pan": "AAGCN7314Q"
+      }
+    }
+  },
+  "V03": {
+    "title": "Edge 1 — Wrong document: an invoice uploaded in the GST certificate slot",
+    "tier": "LOW",
+    "status": "PENDING_VENDOR",
+    "reasons": [
+      "DOC_WRONG_TYPE"
+    ],
+    "after_fix": {
+      "status": "APPROVED",
+      "rechecked": [
+        "document_check",
+        "cross_reference"
+      ]
+    },
+    "fix_documents": {
+      "gst_certificate": "fix/gst_certificate.pdf"
+    },
+    "document_truth": {
+      "docs/gst_certificate.pdf": {
+        "doc_type": "invoice",
+        "gstin": "09AAKFG2290B1ZK"
+      },
+      "docs/cancelled_cheque.pdf": {
+        "doc_type": "cancelled_cheque",
+        "account_number": "50781618495",
+        "ifsc": "SBIN0001520",
+        "account_holder": "GANGA OFFICE SUPPLIES LLP",
+        "bank_name": "STATE BANK OF INDIA"
+      },
+      "fix/gst_certificate.pdf": {
+        "doc_type": "gst_certificate",
+        "gstin": "09AAKFG2290B1ZK",
+        "legal_name": "GANGA OFFICE SUPPLIES LLP",
+        "trade_name": "GANGA OFFICE SUPPLIES",
+        "state": "Uttar Pradesh"
+      }
+    }
+  },
+  "V04": {
+    "title": "Edge 2a — Proprietorship: bank account in 'Sharma Traders', trade name 'Sharma Trading Co.'",
+    "tier": "LOW",
+    "status": "PENDING_INTERNAL",
+    "reasons": [
+      "BANK_NAME_NEAR_MATCH"
+    ],
+    "teach": "For proprietorships, 'Traders' and 'Trading Co./Company' are the same business name",
+    "fix_documents": {},
+    "document_truth": {
+      "docs/gst_certificate.pdf": {
+        "doc_type": "gst_certificate",
+        "gstin": "07BQRPS6127K1Z3",
+        "legal_name": "RAKESH SHARMA",
+        "trade_name": "SHARMA TRADING CO.",
+        "state": "Delhi"
+      },
+      "docs/cancelled_cheque.pdf": {
+        "doc_type": "cancelled_cheque",
+        "account_number": "4103413164752553",
+        "ifsc": "PUNB0016400",
+        "account_holder": "SHARMA TRADERS",
+        "bank_name": "PUNJAB NATIONAL BANK"
+      }
+    }
+  },
+  "V05": {
+    "title": "Edge 2b — Same pattern ('Gupta Traders' vs 'Gupta Trading Company'); cheque is a phone photo",
+    "tier": "LOW",
+    "status": "PENDING_INTERNAL",
+    "reasons": [
+      "BANK_NAME_NEAR_MATCH"
+    ],
+    "after_rule": {
+      "status": "APPROVED"
+    },
+    "fix_documents": {},
+    "document_truth": {
+      "docs/gst_certificate.pdf": {
+        "doc_type": "gst_certificate",
+        "gstin": "24CHNPG4410L1ZD",
+        "legal_name": "NEHA GUPTA",
+        "trade_name": "GUPTA TRADING COMPANY",
+        "state": "Gujarat"
+      },
+      "docs/cancelled_cheque.jpg": {
+        "doc_type": "cancelled_cheque",
+        "account_number": "5192832764",
+        "ifsc": "KKBK0000182",
+        "account_holder": "GUPTA TRADERS",
+        "bank_name": "KOTAK MAHINDRA BANK"
+      }
+    }
+  },
+  "V06": {
+    "title": "Edge 3a — Bank account already belongs to another vendor on file",
+    "tier": "STANDARD",
+    "status": "REJECTED",
+    "reasons": [
+      "BANK_ACCOUNT_SHARED"
+    ],
+    "guardrail": "A taught rule cannot allow shared bank accounts",
+    "fix_documents": {},
+    "document_truth": {
+      "docs/gst_certificate.pdf": {
+        "doc_type": "gst_certificate",
+        "gstin": "33AADCA5530R1ZI",
+        "legal_name": "APEX FACILITY SERVICES PRIVATE LIMITED",
+        "trade_name": "APEX FACILITY SERVICES",
+        "state": "Tamil Nadu"
+      },
+      "docs/pan_card.pdf": {
+        "doc_type": "pan_card",
+        "pan": "AADCA5530R",
+        "name": "APEX FACILITY SERVICES PRIVATE LIMITED"
+      },
+      "docs/cancelled_cheque.pdf": {
+        "doc_type": "cancelled_cheque",
+        "account_number": "204332181960013",
+        "ifsc": "UTIB0000017",
+        "account_holder": "APEX FACILITY SERVICES PVT LTD",
+        "bank_name": "AXIS BANK"
+      }
+    }
+  },
+  "V07": {
+    "title": "Edge 3b — GSTIN is valid but belongs to someone else (other PAN, other state)",
+    "tier": "STANDARD",
+    "status": "REJECTED",
+    "reasons": [
+      "GSTIN_PAN_MISMATCH",
+      "GSTIN_STATE_MISMATCH",
+      "GSTIN_BELONGS_TO_OTHER_VENDOR",
+      "DOC_NAME_MISMATCH"
+    ],
+    "fix_documents": {},
+    "document_truth": {
+      "docs/gst_certificate.pdf": {
+        "doc_type": "gst_certificate",
+        "gstin": "27AAHCD7781F1ZC",
+        "legal_name": "DECCAN ENGINEERING PRIVATE LIMITED"
+      },
+      "docs/pan_card.pdf": {
+        "doc_type": "pan_card",
+        "pan": "AAKCO3302H",
+        "name": "ORION ENGINEERING WORKS PRIVATE LIMITED"
+      },
+      "docs/cancelled_cheque.pdf": {
+        "doc_type": "cancelled_cheque",
+        "account_number": "9350305641395",
+        "ifsc": "CNRB0000418",
+        "account_holder": "ORION ENGINEERING WORKS PRIVATE LIMITED",
+        "bank_name": "CANARA BANK"
+      }
+    }
+  },
+  "V08": {
+    "title": "Edge 4 — Cancelled cheque missing; vendor goes silent (reminder → escalation → expiry)",
+    "tier": "STANDARD",
+    "status": "PENDING_VENDOR",
+    "reasons": [
+      "DOC_MISSING"
+    ],
+    "timeline": {
+      "day_2": "REMINDER",
+      "day_5": "ESCALATED_TO_BUYER",
+      "day_10": "EXPIRED"
+    },
+    "fix_documents": {
+      "cancelled_cheque": "fix/cancelled_cheque.pdf"
+    },
+    "document_truth": {
+      "docs/gst_certificate.pdf": {
+        "doc_type": "gst_certificate",
+        "gstin": "19AAJFL6618D1Z7",
+        "legal_name": "LOTUS PRINT HOUSE",
+        "trade_name": "LOTUS PRINT HOUSE",
+        "state": "West Bengal"
+      },
+      "docs/pan_card.pdf": {
+        "doc_type": "pan_card",
+        "pan": "AAJFL6618D",
+        "name": "LOTUS PRINT HOUSE"
+      },
+      "fix/cancelled_cheque.pdf": {
+        "doc_type": "cancelled_cheque",
+        "account_number": "47672423884",
+        "ifsc": "SBIN0000691",
+        "account_holder": "LOTUS PRINT HOUSE",
+        "bank_name": "STATE BANK OF INDIA"
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "scenario_id": "V06",
+  "legal_name": "Apex Facility Services Private Limited",
+  "trade_name": "Apex Facility Services",
+  "constitution": "Private Limited Company",
+  "country": "IN",
+  "address": {
+    "line1": "No. 8, 2nd Main Road, Guindy Industrial Estate",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "pincode": "600032"
+  },
+  "gstin": "33AADCA5530R1ZI",
+  "pan": "AADCA5530R",
+  "contact": {
+    "name": "Karthik S",
+    "email": "billing@apexfacility.example",
+    "phone": "+91 94440 98712"
+  },
+  "bank": {
+    "account_holder": "APEX FACILITY SERVICES PVT LTD",
+    "account_number": "204332181960013",
+    "ifsc": "UTIB0000017",
+    "bank_name": "Axis Bank"
+  },
+  "documents": {
+    "gst_certificate": "docs/gst_certificate.pdf",
+    "pan_card": "docs/pan_card.pdf",
+    "cancelled_cheque": "docs/cancelled_cheque.pdf"
+  }
+}
