@@ -7,7 +7,7 @@ import { pendingJobs } from "@/lib/client/jobs";
 import { processSubmission, uploadPreviews } from "@/lib/client/pipeline";
 import { sampleFileUrl } from "@/lib/client/scenarios";
 import { Case, CaseRun, Reading, caseName, caseStatus, useStore } from "@/lib/client/store";
-import { CheckResult, DOC_LABEL, DocSlot, STAGES, Stage } from "@/lib/engine/types";
+import { CheckResult, DOC_LABEL, DocSlot, STAGES, Stage, docLabel } from "@/lib/engine/types";
 import { STATUS_META, Section, Stamp, TierTag, fmtTime, inr } from "@/components/ui";
 import { GuardrailPanel, ReviewPanel } from "@/components/ReviewPanel";
 
@@ -183,11 +183,12 @@ function DocumentsPanel({ c, liveDocs, run }: { c: Case; liveDocs: Partial<Recor
           const ld = liveDocs?.[slot];
           const r = ld?.reading ?? run?.inputs.docs[slot];
           const href = docHref(sub?.documents[slot]);
-          const wrongType = r && r.doc_type !== slot;
+          const country = sub?.country ?? "IN";
+          const wrongType = r && r.doc_type !== slot && !(country !== "IN" && slot === "cancelled_cheque" && r.doc_type === "bank_letter");
           return (
             <li key={slot} className="reveal">
               <div className="flex items-baseline justify-between gap-2">
-                <span className="font-semibold">{DOC_LABEL[slot]}</span>
+                <span className="font-semibold">{docLabel(slot, country)}</span>
                 {href && (
                   <a href={href} target="_blank" rel="noreferrer" className="text-[13px] text-ink-2 underline">
                     View
@@ -439,7 +440,7 @@ function WaitingPanel({ c, run }: { c: Case; run: CaseRun }) {
   const next = nextFollowUp(c, now);
   const msgs = s.outbox.filter((m) => m.case_id === c.id);
   return (
-    <Section title="Waiting on the vendor" aside={<span className="text-[13px] text-ink-2">{days === 0 ? "Since today" : `${days} day${days > 1 ? "s" : ""} so far`}</span>}>
+    <Section title="Pending: waiting on the vendor" aside={<span className="text-[13px] text-ink-2">{days === 0 ? "Since today" : `${days} day${days > 1 ? "s" : ""} so far`}</span>}>
       <ul className="list-disc pl-5 text-[14px]">
         {run.decision.vendor_actions.map((a) => (
           <li key={a.code}>{a.message}</li>
