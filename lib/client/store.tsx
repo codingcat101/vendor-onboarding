@@ -25,6 +25,10 @@ export interface AuditEvent {
 
 export type CaseStatus = Status | "INVITED" | "EXPIRED";
 
+export const STATUS_LABEL_PLAIN: Record<CaseStatus, string> = {
+  APPROVED: "approved", REJECTED: "rejected", PENDING_INTERNAL: "needs review", PENDING_VENDOR: "waiting on vendor", INVITED: "invited", EXPIRED: "expired",
+};
+
 export interface Case {
   id: string;
   invite: Invite & { vendor_name: string; vendor_email: string };
@@ -49,6 +53,7 @@ export interface OutboxMessage {
   subject: string;
   body: string;
   kind: "request" | "reminder" | "escalation" | "approved" | "rejected";
+  drafted_by?: string;
 }
 
 interface State {
@@ -118,12 +123,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const now = useCallback(() => new Date(Date.now() + stateRef.current.clockOffsetDays * 86_400_000), []);
   const iso = useCallback(() => now().toISOString(), [now]);
 
+  // setState that also updates the ref immediately, so async code (the agent) never reads stale cases.
+  const commit = useCallback((fn: (s: State) => State) => {
+    stateRef.current = fn(stateRef.current);
+    setState(stateRef.current);
+  }, []);
+
   const store = useMemo<Store>(
     () => ({
       ...state,
       ready,
       now,
-      setRole: (role) => setState((s) => ({ ...s, role })),
+      setRole: (role) => commit((s) => ({ ...s, role })),
       createCase: (invite, scenario) => {
         const { tier, why } = computeTier(invite, stateRef.current.policy);
         const n = stateRef.current.cases.length + 1;
@@ -132,16 +143,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           invite, tier, tier_why: why, scenario, created_at: iso(), readings: {}, runs: [],
           events: [{ at: iso(), actor: invite.buyer, kind: "invite", text: `Invited ${invite.vendor_name} (${invite.category}). Tier ${tier}: ${why}.` }],
         };
-        setState((s) => ({ ...s, cases: [c, ...s.cases] }));
+        commit((s) => ({ ...s, cases: [c, ...s.cases] }));
         return c;
       },
-      updateCase: (id, fn) => setState((s) => ({ ...s, cases: s.cases.map((c) => (c.id === id ? fn(c) : c)) })),
+      updateCase: (id, fn) => commit((s) => ({ ...s, cases: s.cases.map((c) => (c.id === id ? fn(c) : c)) })),
       addEvent: (id, e) =>
-        setState((s) => ({ ...s, cases: s.cases.map((c) => (c.id === id ? { ...c, events: [...c.events, { ...e, at: iso() }] } : c)) })),
-      setPolicy: (policy) => setState((s) => ({ ...s, policy })),
+        commit((s) => ({ ...s, cases: s.cases.map((c) => (c.id === id ? { ...c, events: [...c.events, { ...e, at: iso() }] } : c)) })),
+      setPolicy: (policy) => commit((s) => ({ ...s, policy })),
       addMessage: (m) =>
-        setState((s) => ({ ...s, outbox: [{ ...m, id: Math.random().toString(36).slice(2), at: iso() }, ...s.outbox] })),
-      advanceClock: (days) => setState((s) => ({ ...s, clockOffsetDays: s.clockOffsetDays + days })),
+        commit((s) => ({ ...s, outbox: [{ ...m, id: Math.random().toString(36).slice(2), at: iso() }, ...s.outbox] })),
+      advanceClock: (days) => commit((s) => ({ ...s, clockOffsetDays: s.clockOffsetDays + days })),
       reset: () => {
         try {
           localStorage.removeItem(KEY);
@@ -160,7 +171,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           })),
       getCase: (id) => stateRef.current.cases.find((c) => c.id === id),
     }),
-    [state, ready, now, iso],
+    [state, ready, now, iso, commit],
   );
 
   return <Ctx.Provider value={store}>{children}</Ctx.Provider>;

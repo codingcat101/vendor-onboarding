@@ -28,7 +28,7 @@ export default function VendorPortal() {
   const samples = useScenarios();
   const sample = samples?.find((x) => x.id === c?.scenario);
   const last = c?.runs.at(-1);
-  const isFix = !!last && caseStatus(c!) === "PENDING_VENDOR";
+  const isFix = !!last && ["PENDING_VENDOR", "EXPIRED"].includes(caseStatus(c!));
 
   const [sub, setSub] = useState<Submission | null>(null);
   const [uploads, setUploads] = useState<Partial<Record<DocSlot, Upload>>>({});

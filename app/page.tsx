@@ -1,6 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { runAllSamples } from "@/lib/client/seed";
 import { caseName, caseStatus, useStore } from "@/lib/client/store";
 import { SAMPLE_BLURB, useScenarios } from "@/lib/client/scenarios";
 import { Section, StatusBadge, TierTag, fmtTime } from "@/components/ui";
@@ -9,6 +11,7 @@ export default function CasesPage() {
   const s = useStore();
   const router = useRouter();
   const samples = useScenarios();
+  const [seeding, setSeeding] = useState<string | null>(null);
 
   const startSample = (id: string) => {
     const sc = samples?.find((x) => x.id === id);
@@ -75,7 +78,21 @@ export default function CasesPage() {
         )}
       </Section>
 
-      <Section title="Sample vendors">
+      <Section
+        title="Sample vendors"
+        aside={
+          <button
+            className="text-[13px] text-ink-2 underline underline-offset-2 hover:text-ink disabled:opacity-50"
+            disabled={!samples || !!seeding}
+            onClick={async () => {
+              await runAllSamples(s, samples!, (n) => setSeeding(n));
+              setSeeding(null);
+            }}
+          >
+            {seeding ? `Running ${seeding}…` : "Run all 8 at once"}
+          </button>
+        }
+      >
         <p className="mb-3 text-[14px] text-ink-2">
           Each one is invited by a buyer, then you fill in the vendor&apos;s form with their details and documents, already prepared.
         </p>

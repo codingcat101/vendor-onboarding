@@ -2,12 +2,14 @@
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
+import { EXPIRE_DAY, daysWaiting, nextFollowUp, notifyAfterRun } from "@/lib/client/agent";
 import { pendingJobs } from "@/lib/client/jobs";
 import { processSubmission, uploadPreviews } from "@/lib/client/pipeline";
 import { sampleFileUrl } from "@/lib/client/scenarios";
 import { Case, CaseRun, Reading, caseName, caseStatus, useStore } from "@/lib/client/store";
 import { CheckResult, DOC_LABEL, DocSlot, STAGES, Stage } from "@/lib/engine/types";
 import { STATUS_META, Section, Stamp, TierTag, fmtTime, inr } from "@/components/ui";
+import { GuardrailPanel, ReviewPanel } from "@/components/ReviewPanel";
 
 type LiveDoc = { state: "start" | "reused" | "done"; reading?: Reading };
 
@@ -54,11 +56,12 @@ function CasePage() {
     })
       .then((run) => {
         s.updateCase(c.id, (old) => ({
-          ...old, sub: run.inputs.sub, readings: run.inputs.docs, runs: [...old.runs, run], final: undefined,
+          ...old, sub: run.inputs.sub, readings: run.inputs.docs, runs: [...old.runs, run], final: undefined, expired_at: undefined,
           events: [...old.events, { at: run.at, actor: "Process", kind: "decision", text: `decided: ${STATUS_META[run.decision.status].label.toLowerCase()}. ${run.decision.summary}` }],
         }));
         setLive((l) => (l ? { ...l, phase: "revealing" } : l));
         router.replace(`/cases/${c.id}`);
+        notifyAfterRun(s, { ...c, sub: run.inputs.sub }, run);
       })
       .catch((e) => setLive((l) => (l ? { ...l, phase: "done", error: String(e.message ?? e) } : l)));
   }, [c, search, s, router]);
@@ -384,7 +387,7 @@ function DecisionBlock({ run }: { run: CaseRun }) {
   const m = STATUS_META[run.decision.status];
   return (
     <li className="reveal rounded-md border-l-4 px-3 py-2.5" style={{ borderColor: m.color, background: m.bg }}>
-      <h3 className="text-[14px] font-bold" style={{ color: m.color }}>Decision: {m.label}</h3>
+      <h3 className="text-[14px] font-bold" style={{ color: m.color }}>Automatic decision: {m.label}</h3>
       <p className="text-[14px]">{run.decision.summary}</p>
       <p className="mt-1 text-[13px] text-ink-2">
         Rule: any integrity problem rejects; anything the vendor can fix goes back to them; anything unclear goes to a person; otherwise approved
@@ -398,40 +401,93 @@ function DecisionBlock({ run }: { run: CaseRun }) {
 function NextStep({ c, run }: { c: Case; run: CaseRun }) {
   const s = useStore();
   const status = caseStatus(c);
-  if (status === "PENDING_VENDOR")
-    return (
-      <Section title="Next: the vendor fixes these">
-        <ul className="list-disc pl-5 text-[14px]">
-          {run.decision.vendor_actions.map((a) => (
-            <li key={a.code}>{a.message}</li>
-          ))}
-        </ul>
-        <div className="mt-3">
-          <Link className="btn btn-quiet" href={`/vendor/${c.id}`} onClick={() => s.setRole("vendor")}>
-            Open the vendor&apos;s fix page
-          </Link>
+  const reviewing = run.decision.status === "PENDING_INTERNAL" || !!c.final;
+  return (
+    <>
+      {reviewing && <ReviewPanel c={c} run={run} />}
+      {status === "PENDING_VENDOR" && <WaitingPanel c={c} run={run} />}
+      {status === "REJECTED" && !c.final && <GuardrailPanel c={c} run={run} />}
+      {status === "EXPIRED" && (
+        <Section title="Closed: the vendor didn't respond">
+          <p className="text-[14px] text-ink-2">
+            No reply within {EXPIRE_DAY} days, so the request was closed and the vendor was told how to start again. If they send the fixes later, the case reopens and only the affected checks run.
+          </p>
+          <div className="mt-3">
+            <Link className="btn btn-quiet" href={`/vendor/${c.id}`} onClick={() => s.setRole("vendor")}>Open the vendor&apos;s fix page</Link>
+          </div>
+        </Section>
+      )}
+      {status === "APPROVED" && (
+        <Section title="Vendor approved">
+          <p className="text-[14px] text-ink-2">
+            {caseName(c)} is now on the vendor list. Their GSTIN, PAN and bank account will be checked against every future vendor.
+          </p>
+        </Section>
+      )}
+    </>
+  );
+}
+
+function WaitingPanel({ c, run }: { c: Case; run: CaseRun }) {
+  const s = useStore();
+  const now = s.now();
+  const days = daysWaiting(c, now);
+  const next = nextFollowUp(c, now);
+  const msgs = s.outbox.filter((m) => m.case_id === c.id);
+  return (
+    <Section title="Waiting on the vendor" aside={<span className="text-[13px] text-ink-2">{days === 0 ? "Since today" : `${days} day${days > 1 ? "s" : ""} so far`}</span>}>
+      <ul className="list-disc pl-5 text-[14px]">
+        {run.decision.vendor_actions.map((a) => (
+          <li key={a.code}>{a.message}</li>
+        ))}
+      </ul>
+      <ol className="mt-4 grid grid-cols-4 gap-1 text-center text-[12px]" aria-label="Follow-up schedule">
+        {([
+          [0, "Request sent", "message"],
+          [2, "Reminder", "reminder"],
+          [5, "Escalate to buyer", "escalation"],
+          [EXPIRE_DAY, "Close", "expiry"],
+        ] as const).map(([d, label, kind]) => {
+          const reached = c.events.some((e) => e.kind === kind && e.at >= run.at);
+          return (
+            <li key={label} className={`rounded border px-1 py-1.5 ${reached ? "border-wait bg-wait-bg font-semibold text-wait" : "border-rule text-ink-3"}`}>
+              Day {d}
+              <span className="block font-normal">{label}</span>
+            </li>
+          );
+        })}
+      </ol>
+      {next && <p className="mt-2 text-[13px] text-ink-2">Next: {next.what.toLowerCase()} on day {next.day}.</p>}
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <Link className="btn btn-quiet !py-1 text-[13px]" href={`/vendor/${c.id}`} onClick={() => s.setRole("vendor")}>
+          Open the vendor&apos;s fix page
+        </Link>
+        <span className="ml-auto text-[13px] text-ink-3">Simulate time passing:</span>
+        <button className="btn btn-quiet !py-1 text-[13px]" onClick={() => s.advanceClock(1)}>+1 day</button>
+        <button className="btn btn-quiet !py-1 text-[13px]" onClick={() => s.advanceClock(3)}>+3 days</button>
+      </div>
+      {msgs.length > 0 && (
+        <div className="mt-4 border-t border-rule pt-3">
+          <p className="mb-1.5 text-[13px] font-semibold">Messages sent</p>
+          <ul className="grid gap-2">
+            {msgs.map((m) => (
+              <li key={m.id}>
+                <details className="rounded border border-rule bg-paper px-3 py-2 text-[14px]">
+                  <summary className="cursor-pointer">
+                    <b className="font-semibold">{m.subject}</b>
+                    <span className="block text-[12px] text-ink-3">
+                      To {m.to} · {fmtTime(m.at)} · {m.drafted_by === "template" ? "from template" : `drafted by ${m.drafted_by}`}
+                    </span>
+                  </summary>
+                  <pre className="mt-2 whitespace-pre-wrap font-sans text-[14px] text-ink-2">{m.body}</pre>
+                </details>
+              </li>
+            ))}
+          </ul>
         </div>
-      </Section>
-    );
-  if (status === "PENDING_INTERNAL")
-    return (
-      <Section title="Next: a reviewer decides">
-        <ul className="list-disc pl-5 text-[14px]">
-          {run.decision.reasons.map((r) => (
-            <li key={r.code}>{r.message}</li>
-          ))}
-        </ul>
-      </Section>
-    );
-  if (status === "APPROVED")
-    return (
-      <Section title="Vendor approved">
-        <p className="text-[14px] text-ink-2">
-          {caseName(c)} is now on the vendor list. Their GSTIN, PAN and bank account will be checked against every future vendor.
-        </p>
-      </Section>
-    );
-  return null;
+      )}
+    </Section>
+  );
 }
 
 function ActivityPanel({ c }: { c: Case }) {

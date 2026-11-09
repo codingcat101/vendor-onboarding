@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import { NextRequest, NextResponse } from "next/server";
-import { readDocument } from "@/lib/engine/extract";
+import { cachedReading, readDocument } from "@/lib/engine/extract";
 import { loadScenarios, scenarioFile, truthReading } from "@/lib/engine/fixtures";
 import type { DocSlot } from "@/lib/engine/types";
 
@@ -12,6 +12,7 @@ const MAX_BYTES = 8 * 1024 * 1024;
 export async function POST(req: NextRequest) {
   const apiKey = process.env.GEMINI_API_KEY;
   let slot: string, file: string, bytes: Buffer, scenario: string | undefined;
+  let preferRecorded = false;
 
   if (req.headers.get("content-type")?.includes("multipart/form-data")) {
     const form = await req.formData();
@@ -27,11 +28,18 @@ export async function POST(req: NextRequest) {
     slot = body.slot;
     scenario = body.scenario;
     file = body.file;
+    preferRecorded = !!body.prefer_recorded;
     if (!/^V\d{2}$/.test(scenario ?? "") || !/^(docs|fix)\/[a-z_]+\.(pdf|jpg)$/.test(file))
       return NextResponse.json({ error: "Unknown sample file" }, { status: 400 });
     bytes = fs.readFileSync(scenarioFile(scenario!, file));
   }
   if (!SLOTS.includes(slot)) return NextResponse.json({ error: "Unknown document slot" }, { status: 400 });
+
+  // Bulk demo loading uses the AI readings recorded earlier, to save the daily AI quota for live runs.
+  if (preferRecorded && scenario) {
+    const r = cachedReading(scenario, slot as DocSlot, file);
+    if (r) return NextResponse.json(r);
+  }
 
   // Development only: READER=reference uses the known correct values of sample documents (labelled on screen).
   if (process.env.READER === "reference" && scenario) {

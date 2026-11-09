@@ -15,12 +15,12 @@ export type Progress =
   | { phase: "reading"; slot: DocSlot; state: "start" | "reused" | "done"; reading?: Reading }
   | { phase: "checking" };
 
-async function readOne(slot: DocSlot, up: Upload): Promise<Reading> {
+async function readOne(slot: DocSlot, up: Upload, preferRecorded = false): Promise<Reading> {
   let res: Response;
   if (up.kind === "sample") {
     res = await fetch("/api/read", {
       method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ slot, scenario: up.scenario, file: up.file }),
+      body: JSON.stringify({ slot, scenario: up.scenario, file: up.file, prefer_recorded: preferRecorded }),
     });
   } else {
     const fd = new FormData();
@@ -44,8 +44,9 @@ export async function processSubmission(opts: {
   onProgress: (p: Progress) => void;
   trigger: CaseRun["trigger"];
   at: string;
+  preferRecorded?: boolean;
 }): Promise<CaseRun> {
-  const { c, sub, uploads, policy, extraMaster, onProgress, trigger, at } = opts;
+  const { c, sub, uploads, policy, extraMaster, onProgress, trigger, at, preferRecorded } = opts;
   const prev = c.runs.at(-1);
 
   // 1. Read documents — reuse earlier readings for files that did not change.
@@ -68,7 +69,7 @@ export async function processSubmission(opts: {
       }
       if (up.kind === "file") uploadPreviews.set(ref, up.previewUrl);
       onProgress({ phase: "reading", slot, state: "start" });
-      const r = await readOne(slot, up);
+      const r = await readOne(slot, up, preferRecorded);
       docs[slot] = r;
       onProgress({ phase: "reading", slot, state: "done", reading: r });
     }),

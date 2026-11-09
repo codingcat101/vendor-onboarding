@@ -1,6 +1,9 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+import { agentTick, latestStore } from "@/lib/client/agent";
+import { caseStatus } from "@/lib/client/store";
 import { Role, useStore } from "@/lib/client/store";
 
 const ROLES: { id: Role; label: string; hint: string }[] = [
@@ -12,12 +15,24 @@ const ROLES: { id: Role; label: string; hint: string }[] = [
 const NAV: { href: string; label: string; roles: Role[] }[] = [
   { href: "/", label: "Cases", roles: ["buyer", "reviewer", "vendor"] },
   { href: "/invite", label: "Invite a vendor", roles: ["buyer"] },
+  { href: "/review", label: "Review queue", roles: ["reviewer"] },
+  { href: "/dashboard", label: "Dashboard", roles: ["buyer", "reviewer"] },
+  { href: "/outbox", label: "Messages", roles: ["buyer", "reviewer"] },
+  { href: "/policy", label: "Rules", roles: ["reviewer", "buyer"] },
 ];
 
 export default function Shell({ children }: { children: React.ReactNode }) {
   const s = useStore();
   const path = usePathname();
   const offset = s.clockOffsetDays;
+  latestStore.current = s;
+  const queue = s.cases.filter((c) => caseStatus(c) === "PENDING_INTERNAL").length;
+
+  // The follow-up agent acts whenever simulated time moves forward.
+  useEffect(() => {
+    if (s.ready) agentTick(s);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [s.clockOffsetDays, s.ready]);
 
   return (
     <div className="min-h-screen">
@@ -40,6 +55,9 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                 className={`rounded px-2.5 py-1 text-[14px] ${path === n.href ? "bg-tint font-semibold" : "text-ink-2 hover:text-ink"}`}
               >
                 {n.label}
+                {n.href === "/review" && queue > 0 && (
+                  <span className="ml-1.5 rounded-full bg-review px-1.5 text-[12px] font-semibold text-white">{queue}</span>
+                )}
               </Link>
             ))}
           </nav>

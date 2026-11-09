@@ -371,7 +371,7 @@ const crossRef: CheckDef[] = [
     run: (ctx) => {
       const holder = usableDoc(ctx, "cancelled_cheque")?.fields.account_holder || ctx.sub.bank.account_holder;
       const m = bestMatch(holder, [ctx.sub.legal_name, ctx.sub.trade_name], ctx.policy.name_equivalences, ctx.sub.constitution);
-      const ev = { account_holder: holder, legal_name: ctx.sub.legal_name, trade_name: ctx.sub.trade_name ?? "", similarity: m.score };
+      const ev = { account_holder: holder, compared_with: m.against, legal_name: ctx.sub.legal_name, trade_name: ctx.sub.trade_name ?? "", similarity: m.score };
       if (m.verdict === "mismatch")
         return fail("fraud", "BANK_NAME_MISMATCH",
           `Bank account is held by "${holder}", which doesn't match "${ctx.sub.legal_name}"${ctx.sub.trade_name ? ` or "${ctx.sub.trade_name}"` : ""} — payments could go to a third party`,

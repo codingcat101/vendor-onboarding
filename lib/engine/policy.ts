@@ -41,7 +41,7 @@ export const DEFAULT_POLICY: Policy = {
 
 export function computeTier(invite: Invite, policy: Policy): { tier: Tier; why: string } {
   const spend = invite.annual_spend_inr;
-  const lakh = (n: number) => `₹${(n / 100_000).toLocaleString("en-IN")}L`;
+  const lakh = (n: number) => (n >= 10_000_000 ? `₹${(n / 10_000_000).toLocaleString("en-IN")} Cr` : `₹${(n / 100_000).toLocaleString("en-IN")}L`);
   if (invite.data_access) return { tier: "STRATEGIC", why: "Vendor will get access to company data or systems" };
   if (spend > policy.tiers.standard_max_inr)
     return { tier: "STRATEGIC", why: `Expected spend ${lakh(spend)} is above ${lakh(policy.tiers.standard_max_inr)}` };
@@ -73,6 +73,16 @@ export const HARD_CODES = new Set([
   "DOC_NAME_MISMATCH",
   "BANK_NAME_MISMATCH",
 ]);
+
+/** Plain description of each fraud problem (what went wrong, not what the check looks for). */
+export const HARD_LABEL: Record<string, string> = {
+  BANK_ACCOUNT_SHARED: "bank account already belongs to another vendor",
+  GSTIN_PAN_MISMATCH: "PAN inside the GSTIN is not the vendor's PAN",
+  GSTIN_BELONGS_TO_OTHER_VENDOR: "GSTIN is on file for a different vendor",
+  PAN_BELONGS_TO_OTHER_VENDOR: "PAN is on file for a different vendor",
+  DOC_NAME_MISMATCH: "a document is in a clearly different name",
+  BANK_NAME_MISMATCH: "bank account holder is a clearly different name",
+};
 
 /** The only rule types a reviewer can teach. Anything else is refused. */
 export type TaughtRule =
