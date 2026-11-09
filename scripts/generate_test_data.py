@@ -260,6 +260,44 @@ for i, (name, etype, st, bank) in enumerate(MASTER_NAMES, start=1):
     ))
 
 # ----------------------------------------------------------------------------
+# V09: an international vendor (added after the master so the Indian data stays identical)
+# ----------------------------------------------------------------------------
+rng = random.Random(909)
+
+
+def uk_vat() -> str:
+    while True:
+        d = [rng.randint(0, 9) for _ in range(7)]
+        total = sum(w * x for w, x in zip([8, 7, 6, 5, 4, 3, 2], d))
+        check = (97 - total % 97) % 97
+        if check < 97:
+            return "GB" + "".join(map(str, d)) + f"{check:02d}"
+
+
+def uk_iban(bank: str, sort: str, acc: str) -> str:
+    bban = bank + sort + acc
+    num = "".join(str(int(ch, 36)) for ch in bban + "GB00")
+    check = 98 - int(num) % 97
+    return f"GB{check:02d}{bban}"
+
+
+v09_iban = uk_iban("TMSB", "401276", "".join(str(rng.randint(0, 9)) for _ in range(8)))
+v09_bad_tax = make_gstin("27", "AAKCT" + "5507" + "Q")
+S["V09"] = dict(
+    title="Edge 5 — UK vendor enters an Indian GSTIN as its tax ID (format wrong for the country)",
+    invite=dict(buyer="Priya Nair (Procurement)", category="Machined components",
+                annual_spend_inr=400_000, data_access=False),
+    form=dict(legal_name="Thames Precision Tools Limited", trade_name="Thames Precision", constitution="Private Limited Company",
+              country="GB", address=dict(line1="Unit 4, Riverside Business Park, Rotherhithe", city="London", state="England",
+                                         pincode="SE16 4DG"),
+              tax_id=v09_bad_tax, contact=dict(name="Oliver Grant", email="accounts@thamesprecision.example", phone="+44 20 7946 0321"),
+              bank=dict(account_holder="THAMES PRECISION TOOLS LIMITED", account_number=v09_iban, ifsc="", bank_name="Thamesbank (fictional)")),
+    docs={"cancelled_cheque": "bankletter"},
+    fix_fields={"tax_id": uk_vat()},
+    expected=dict(tier="LOW", status="PENDING_VENDOR", reasons=["TAX_ID_FORMAT"], after_fix=dict(status="APPROVED")),
+)
+
+# ----------------------------------------------------------------------------
 # Document rendering
 # ----------------------------------------------------------------------------
 W, H = A4
@@ -452,7 +490,29 @@ def render_invoice(c, f):
     watermark(c)
 
 
-RENDER = {"gst": render_gst, "pan": render_pan, "cheque": render_cheque, "coi": render_coi,
+def render_bankletter(c, f):
+    b = f["bank"]
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(20 * mm, H - 28 * mm, "THAMESBANK  (fictional bank)")
+    c.setFont("Helvetica", 9)
+    c.drawString(20 * mm, H - 34 * mm, "1 Specimen Square, London EC2A 4XX  ·  SPECIMEN")
+    c.setFont("Helvetica", 10)
+    c.drawString(20 * mm, H - 50 * mm, "12 October 2026")
+    c.drawString(20 * mm, H - 62 * mm, "To whom it may concern")
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(20 * mm, H - 74 * mm, "Confirmation of bank account details")
+    c.setFont("Helvetica", 10)
+    c.drawString(20 * mm, H - 84 * mm, "We confirm that the following account is held with us and is in good standing.")
+    iban = b["account_number"]
+    rows = [("Account name", b["account_holder"]), ("Sort code", f"{iban[8:10]}-{iban[10:12]}-{iban[12:14]}"),
+            ("Account number", iban[14:]), ("IBAN", " ".join(iban[i:i + 4] for i in range(0, len(iban), 4))), ("BIC", "TMSBGB2L")]
+    kv_table(c, 20 * mm, H - 92 * mm, rows, label_w=45 * mm, width=150 * mm)
+    c.drawString(20 * mm, H - 150 * mm, "Yours faithfully,")
+    c.drawString(20 * mm, H - 165 * mm, "Specimen Officer, Business Banking (fictional)")
+    watermark(c)
+
+
+RENDER = {"bankletter": render_bankletter, "gst": render_gst, "pan": render_pan, "cheque": render_cheque, "coi": render_coi,
           "invoice": render_invoice}
 
 
@@ -527,6 +587,8 @@ def ground_truth(slot, spec, form):
                     pan=form["pan"])
     if kind == "invoice":
         return dict(doc_type="invoice", gstin=form["gstin"])
+    if kind == "bankletter":
+        return dict(doc_type="bank_letter", account_number=b["account_number"], account_holder=b["account_holder"])
     raise ValueError(kind)
 
 
@@ -556,7 +618,7 @@ def main():
         submission = dict(scenario_id=sid, **form, documents=uploaded)
         (folder / "submission.json").write_text(json.dumps(submission, indent=2, ensure_ascii=False))
         (folder / "invite.json").write_text(json.dumps(s["invite"], indent=2))
-        expected[sid] = dict(title=s["title"], **s["expected"], fix_documents=fixes, document_truth=truth)
+        expected[sid] = dict(title=s["title"], **s["expected"], fix_documents=fixes, fix_fields=s.get("fix_fields", {}), document_truth=truth)
     (OUT / "expected.json").write_text(json.dumps(expected, indent=2, ensure_ascii=False))
     (ROOT / "data" / "vendor_master.json").write_text(json.dumps(master, indent=2))
     print(f"Wrote {len(S)} scenarios and {len(master)} master vendors")

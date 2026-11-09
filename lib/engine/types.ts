@@ -13,12 +13,19 @@ export type Outcome = "pass" | "fail" | "warn" | "skip";
 
 export type DocSlot = "gst_certificate" | "pan_card" | "cancelled_cheque" | "incorporation_certificate";
 
+export const COUNTRY_NAME: Record<string, string> = { IN: "India", US: "the United States", GB: "the United Kingdom" };
+
 export const DOC_LABEL: Record<DocSlot, string> = {
   gst_certificate: "GST registration certificate",
   pan_card: "PAN card",
   cancelled_cheque: "Cancelled cheque",
   incorporation_certificate: "Certificate of incorporation",
 };
+
+/** What to call a document slot for a vendor in this country (cancelled cheques are an Indian convention). */
+export function docLabel(slot: DocSlot, country: string) {
+  return slot === "cancelled_cheque" && country !== "IN" ? "Bank letter (or voided cheque)" : DOC_LABEL[slot];
+}
 
 export interface Invite {
   buyer: string;
@@ -51,6 +58,8 @@ export interface ExtractedDoc {
   fields: Record<string, string>;
   confidence: number; // 0..1
   source: "ai" | "cache" | "ground_truth";
+  /** Set when the AI could not read the document at all (service down, quota). */
+  error?: string;
 }
 
 export interface ExistingVendor {

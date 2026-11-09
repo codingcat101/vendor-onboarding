@@ -13,9 +13,10 @@ Built for the Zamp AI Solutions Analyst case study (problem statement 2).
 | | |
 |---|---|
 | **Risk-based checking** | The buyer enters category, expected spend and whether the vendor gets data access. That sets the tier: Low (< ₹5L), Standard (₹5L–1Cr) or Strategic (> ₹1Cr or data access). The tier decides which documents are needed and whether a person must sign off. |
-| **Checks** | Required fields and documents · document is the right type and readable · GSTIN check digit · PAN format and holder type vs. business type · IFSC is a real branch (offline registry of 176,918 branches) · PAN inside GSTIN = PAN given · GSTIN state = address state · documents match the form · bank account holder is the vendor · bank account, GSTIN and PAN not already used by another vendor |
-| **Decision** | Any integrity problem → **Rejected**. Anything the vendor can fix → **Waiting on vendor**. Anything unclear → **Needs review**. Otherwise **Approved** (Strategic vendors always need a sign-off). |
+| **Checks** | Tax ID format for the vendor's country (India GSTIN, UK VAT, US EIN; UK IBAN and US routing checksums) · Required fields and documents · document is the right type and readable · GSTIN check digit · PAN format and holder type vs. business type · IFSC is a real branch (offline registry of 176,918 branches) · PAN inside GSTIN = PAN given · GSTIN state = address state · documents match the form · bank account holder is the vendor · bank account, GSTIN and PAN not already used by another vendor |
+| **Decision** | **Approved**, **Pending** or **Rejected**, with every reason visible. Any integrity problem → Rejected. Anything the vendor can fix → Pending: vendor. Anything unclear → Pending: review. Otherwise Approved (Strategic vendors always need a sign-off). |
 | **Fix loop** | The vendor gets a page listing only what to fix. On resubmission only the affected checks run again; the rest are kept and marked as such. |
+| **AI unavailable** | If no model can read a document (outage, quota), it goes to a person; the vendor is never blamed and nothing is treated as a mismatch. |
 | **Guardrails** | Fraud signals (shared bank account, someone else's GSTIN, name mismatch on documents) can never be relaxed by a taught rule. A taught name rule can only settle near-matches, never make an unrelated name count. A field the AI could not read is sent to a person, never treated as a mismatch. |
 
 ## AI reading accuracy
@@ -40,7 +41,7 @@ See [test-data/README.md](test-data/README.md). All companies, people and identi
 npm install
 echo "GEMINI_API_KEY=your-key" > .env.local
 npm run dev            # http://localhost:3000
-npm test               # 38 tests: identifiers, every scenario, fix loop, teaching, guardrails, real AI readings
+npm test               # 48 tests: identifiers, every scenario, fix loop, teaching, guardrails, real AI readings
 ```
 
 Each visitor gets a private sandbox kept in their browser ("Reset demo" clears it), so several people can try the live link at once without affecting each other.

@@ -17,6 +17,7 @@ Regenerate with `python3 scripts/generate_test_data.py` (seeded, so output is st
 | V05 | Low | Gupta Trading Company — bank account **"Gupta Traders"**; cheque is a **phone photo** | Pending (internal) under v1 | Under policy v2 → **Approved automatically** |
 | V06 | Standard | Apex Facility Services — bank account **already belongs to Velocity Logistics** (VM-0001) | **Rejected** — shared bank account | Reviewer tries to teach an exception → **blocked by guardrail** |
 | V07 | Standard | Orion Engineering (Coimbatore, TN) — GSTIN is valid but **belongs to Deccan Engineering** (VM-0002): different PAN, Maharashtra state code, uploaded certificate shows Deccan | **Rejected** — identity mismatch | — |
+| V09 | Low | Thames Precision Tools (UK) — enters its Indian subsidiary's **GSTIN as its UK tax ID**; bank letter instead of a cheque, valid IBAN | **Pending (vendor)** — tax ID format wrong for the country | Vendor enters a UK VAT number → only 2 of 8 checks re-run → Approved |
 | V08 | Standard | Lotus Print House — **cancelled cheque missing**; PAN card is an image-only scan | **Pending (vendor)** — missing document | Vendor goes silent → day 2 reminder → day 5 escalate to buyer → day 10 expired (fix file available if you want to show recovery instead) |
 
 ## Files

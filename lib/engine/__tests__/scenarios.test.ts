@@ -48,6 +48,24 @@ describe("follow-up loop: incremental re-check (V03 wrong document)", () => {
   });
 });
 
+describe("international vendor (V09): tax ID format wrong for the country", () => {
+  it("asks the UK vendor for a VAT number, accepts a bank letter, then approves after the fix", () => {
+    const s = byId.V09;
+    const first = run("V09");
+    expect(first.decision.status).toBe("PENDING_VENDOR");
+    expect(first.decision.vendor_actions[0].message).toMatch(/Indian GST number/);
+    expect(first.checks.find((c) => c.id === "doc_cancelled_cheque")!.outcome).toBe("pass"); // bank letter accepted outside India
+    expect(first.checks.find((c) => c.id === "intl_bank")!.outcome).toBe("pass"); // IBAN mod-97
+    const fixed = { ...s.sub, ...(s.expected.fix_fields as object) };
+    const docs = truthReadings(s);
+    const changed = diffInputs({ sub: s.sub, docs }, { sub: fixed, docs });
+    const second = runOnboarding({ sub: fixed, invite: s.invite, docs, master, policy: DEFAULT_POLICY, previous: first, changed });
+    expect(second.decision.status).toBe("APPROVED");
+    expect(second.rechecked).toContain("tax_id_country");
+    expect(second.rechecked).not.toContain("doc_cancelled_cheque");
+  });
+});
+
 describe("reviewer teaching (V04 → V05)", () => {
   const rule = { type: "name_equivalence" as const, phrases: ["TRADERS", "TRADING COMPANY"], constitutions: ["proprietor"] };
   const v2 = applyRule(DEFAULT_POLICY, rule, {
@@ -111,6 +129,15 @@ describe("tiering", () => {
     const r2 = runOnboarding({ sub: s.sub, invite: s.invite, docs, master, policy: DEFAULT_POLICY });
     expect(r2.decision.status).toBe("PENDING_INTERNAL");
     expect(r2.decision.reasons.map((x) => x.code)).toEqual(["DOC_FIELD_NOT_READ"]);
+  });
+  it("when the AI can't read a document at all, a person checks it; the vendor is not blamed", () => {
+    const s = byId.V01;
+    const docs = truthReadings(s);
+    docs.cancelled_cheque = { ...docs.cancelled_cheque!, doc_type: "other", fields: {}, confidence: 0, error: "quota exceeded" };
+    const r = runOnboarding({ sub: s.sub, invite: s.invite, docs, master, policy: DEFAULT_POLICY });
+    expect(r.decision.status).toBe("PENDING_INTERNAL");
+    expect(r.decision.reasons.map((x) => x.code)).toEqual(["DOC_NOT_READ_AI"]);
+    expect(r.decision.vendor_actions).toHaveLength(0);
   });
   it("same vendor, higher spend → stricter tier and more documents", () => {
     const s = byId.V01;

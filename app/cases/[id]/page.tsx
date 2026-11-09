@@ -104,7 +104,11 @@ function CasePage() {
             <Stamp
               status={status}
               animate={live?.phase === "revealing" || live?.phase === "done"}
-              sub={c.final ? `by ${c.final.by.split(" (")[0]}` : `policy v${run!.policy_version} · run ${c.runs.length}`}
+              sub={
+                c.final
+                  ? `by ${c.final.by.split(" (")[0]}`
+                  : `${status === "PENDING_VENDOR" ? "waiting on vendor · " : status === "PENDING_INTERNAL" ? "needs a reviewer · " : ""}policy v${run!.policy_version} · run ${c.runs.length}`
+              }
             />
           )}
         </div>

@@ -142,7 +142,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Tile value={`${noPerson} of ${submitted.length}`} label="Handled with no person involved" note="Approved, rejected or sent back automatically" />
         <Tile value={med === null ? "—" : duration(med)} label="Median time to approval" note={`From submission, across ${approvalTimes.length} approved`} />
-        <Tile value={String(waiting.length)} label="Waiting on vendors" note={waiting.length ? `Oldest: ${Math.max(...waiting.map((c) => daysWaiting(c, now)))} days` : "None"} />
+        <Tile value={String(waiting.length)} label="Pending on vendors" note={waiting.length ? `Oldest: ${Math.max(...waiting.map((c) => daysWaiting(c, now)))} days` : "None"} />
         <Tile value={String(fraud.length)} label="Stopped by fraud checks" note="Can't be overridden" />
       </div>
 

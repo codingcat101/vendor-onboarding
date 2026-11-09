@@ -12,14 +12,14 @@ import type { DocSlot, ExtractedDoc } from "./types";
 export const MODELS = (process.env.GEMINI_MODELS || "gemini-3.6-flash,gemini-3-flash-preview,gemini-3.1-flash-lite").split(",").map((m) => m.trim());
 const TIMEOUT_MS = Number(process.env.GEMINI_TIMEOUT_MS || 25000);
 
-const PROMPT = `You are reading ONE document uploaded during vendor onboarding in India.
+const PROMPT = `You are reading ONE document uploaded during vendor onboarding (vendors are mostly in India, some abroad).
 1. Decide what the document actually is. doc_type must be one of:
    gst_certificate, pan_card, cancelled_cheque, incorporation_certificate, invoice, bank_letter, purchase_order, aadhaar_card, other.
    Judge by content, not by any file name.
 2. Extract ONLY the fields that are visibly printed (leave others as empty strings). Copy values exactly; do not correct or guess.
    - gst_certificate: gstin, legal_name, trade_name, state
    - pan_card: pan, name
-   - cancelled_cheque / bank_letter: account_number, ifsc, account_holder, bank_name
+   - cancelled_cheque / bank_letter: account_number (an IBAN if shown), ifsc (or US routing number / UK sort code), account_holder, bank_name
    - incorporation_certificate: cin, legal_name, pan
    - invoice: gstin
 3. confidence: 0..1, your confidence that doc_type AND the key identifiers are read correctly. Lower it for blur, skew, glare or cut-off text.

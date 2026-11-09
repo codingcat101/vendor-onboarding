@@ -1,0 +1,28 @@
+{
+  "scenario_id": "V09",
+  "legal_name": "Thames Precision Tools Limited",
+  "trade_name": "Thames Precision",
+  "constitution": "Private Limited Company",
+  "country": "GB",
+  "address": {
+    "line1": "Unit 4, Riverside Business Park, Rotherhithe",
+    "city": "London",
+    "state": "England",
+    "pincode": "SE16 4DG"
+  },
+  "tax_id": "27AAKCT5507Q1ZM",
+  "contact": {
+    "name": "Oliver Grant",
+    "email": "accounts@thamesprecision.example",
+    "phone": "+44 20 7946 0321"
+  },
+  "bank": {
+    "account_holder": "THAMES PRECISION TOOLS LIMITED",
+    "account_number": "GB94TMSB40127636330946",
+    "ifsc": "",
+    "bank_name": "Thamesbank (fictional)"
+  },
+  "documents": {
+    "cancelled_cheque": "docs/cancelled_cheque.pdf"
+  }
+}

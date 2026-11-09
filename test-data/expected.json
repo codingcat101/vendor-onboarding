@@ -5,6 +5,7 @@
     "status": "APPROVED",
     "reasons": [],
     "fix_documents": {},
+    "fix_fields": {},
     "document_truth": {
       "docs/gst_certificate.pdf": {
         "doc_type": "gst_certificate",
@@ -35,6 +36,7 @@
       "STRATEGIC_SIGNOFF_REQUIRED"
     ],
     "fix_documents": {},
+    "fix_fields": {},
     "document_truth": {
       "docs/gst_certificate.pdf": {
         "doc_type": "gst_certificate",
@@ -80,6 +82,7 @@
     "fix_documents": {
       "gst_certificate": "fix/gst_certificate.pdf"
     },
+    "fix_fields": {},
     "document_truth": {
       "docs/gst_certificate.pdf": {
         "doc_type": "invoice",
@@ -110,6 +113,7 @@
     ],
     "teach": "For proprietorships, 'Traders' and 'Trading Co./Company' are the same business name",
     "fix_documents": {},
+    "fix_fields": {},
     "document_truth": {
       "docs/gst_certificate.pdf": {
         "doc_type": "gst_certificate",
@@ -138,6 +142,7 @@
       "status": "APPROVED"
     },
     "fix_documents": {},
+    "fix_fields": {},
     "document_truth": {
       "docs/gst_certificate.pdf": {
         "doc_type": "gst_certificate",
@@ -164,6 +169,7 @@
     ],
     "guardrail": "A taught rule cannot allow shared bank accounts",
     "fix_documents": {},
+    "fix_fields": {},
     "document_truth": {
       "docs/gst_certificate.pdf": {
         "doc_type": "gst_certificate",
@@ -197,6 +203,7 @@
       "DOC_NAME_MISMATCH"
     ],
     "fix_documents": {},
+    "fix_fields": {},
     "document_truth": {
       "docs/gst_certificate.pdf": {
         "doc_type": "gst_certificate",
@@ -232,6 +239,7 @@
     "fix_documents": {
       "cancelled_cheque": "fix/cancelled_cheque.pdf"
     },
+    "fix_fields": {},
     "document_truth": {
       "docs/gst_certificate.pdf": {
         "doc_type": "gst_certificate",
@@ -251,6 +259,28 @@
         "ifsc": "SBIN0000691",
         "account_holder": "LOTUS PRINT HOUSE",
         "bank_name": "STATE BANK OF INDIA"
+      }
+    }
+  },
+  "V09": {
+    "title": "Edge 5 — UK vendor enters an Indian GSTIN as its tax ID (format wrong for the country)",
+    "tier": "LOW",
+    "status": "PENDING_VENDOR",
+    "reasons": [
+      "TAX_ID_FORMAT"
+    ],
+    "after_fix": {
+      "status": "APPROVED"
+    },
+    "fix_documents": {},
+    "fix_fields": {
+      "tax_id": "GB687379663"
+    },
+    "document_truth": {
+      "docs/cancelled_cheque.pdf": {
+        "doc_type": "bank_letter",
+        "account_number": "GB94TMSB40127636330946",
+        "account_holder": "THAMES PRECISION TOOLS LIMITED"
       }
     }
   }

@@ -8,6 +8,7 @@ export interface SampleScenario {
   invite: Invite;
   sub: Submission;
   fix_documents: Partial<Record<DocSlot, string>>;
+  fix_fields: Record<string, string>;
   expected_status: string;
 }
 
@@ -21,6 +22,7 @@ export const SAMPLE_BLURB: Record<string, { name: string; what: string }> = {
   V06: { name: "Apex Facility Services", what: "Bank account already belongs to another vendor" },
   V07: { name: "Orion Engineering Works", what: "GSTIN is real but registered to someone else" },
   V08: { name: "Lotus Print House", what: "Cancelled cheque missing; vendor goes quiet" },
+  V09: { name: "Thames Precision Tools (UK)", what: "Enters an Indian GSTIN as its UK tax ID" },
 };
 
 let cache: SampleScenario[] | null = null;

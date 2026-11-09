@@ -1,0 +1,16 @@
+{
+  "slot": "cancelled_cheque",
+  "file": "docs/cancelled_cheque.pdf",
+  "doc_type": "bank_letter",
+  "fields": {
+    "account_holder": "THAMES PRECISION TOOLS LIMITED",
+    "account_number": "GB94 TMSB 4012 7636 3309 46",
+    "bank_name": "THAMESBANK",
+    "ifsc": "40-12-76"
+  },
+  "confidence": 0.95,
+  "source": "ai",
+  "notes": "Fictional UK bank account confirmation letter.",
+  "ms": 4864,
+  "model": "gemini-3.6-flash"
+}

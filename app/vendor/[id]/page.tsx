@@ -7,7 +7,7 @@ import { Upload, fileRef } from "@/lib/client/pipeline";
 import { SAMPLE_BLURB, sampleFileUrl, useScenarios } from "@/lib/client/scenarios";
 import { caseStatus, useStore } from "@/lib/client/store";
 import { requiredDocs } from "@/lib/engine/policy";
-import { DOC_LABEL, DocSlot, Submission } from "@/lib/engine/types";
+import { COUNTRY_NAME, DocSlot, Submission, docLabel } from "@/lib/engine/types";
 import { Section } from "@/components/ui";
 
 const BUYER_COMPANY = "Northwind Retail Pvt Ltd";
@@ -16,7 +16,7 @@ const ALL_SLOTS: DocSlot[] = ["gst_certificate", "pan_card", "cancelled_cheque",
 
 const emptySub = (name: string, email: string): Submission => ({
   legal_name: name, trade_name: "", constitution: CONSTITUTIONS[0], country: "IN",
-  address: { line1: "", city: "", state: "", pincode: "" }, gstin: "", pan: "", cin: "",
+  address: { line1: "", city: "", state: "", pincode: "" }, gstin: "", pan: "", cin: "", tax_id: "",
   contact: { name: "", email, phone: "" }, bank: { account_holder: "", account_number: "", ifsc: "", bank_name: "" }, documents: {},
 });
 
@@ -59,6 +59,15 @@ export default function VendorPortal() {
   const required = useMemo(() => (c && sub ? requiredDocs(c.tier, sub, s.policy) : []), [c, sub, s.policy]);
   const slots = ALL_SLOTS.filter((x) => required.includes(x) || uploads[x]);
   const asks = isFix ? last!.decision.vendor_actions : [];
+  // In the fix flow, show only the parts of the form that need fixing.
+  const SECTION_OF: Record<string, string> = {
+    required_fields: "all", gstin_format: "tax", tax_id_country: "tax", pan_format: "tax", cin_format: "tax",
+    ifsc_valid: "bank", account_format: "bank", intl_bank: "bank", cheque_matches: "bank",
+  };
+  const flagged = new Set(
+    isFix ? last!.checks.filter((k) => k.outcome === "fail" && k.severity === "vendor_fixable").map((k) => SECTION_OF[k.id]).filter(Boolean) : [],
+  );
+  const show = (sec: string) => !isFix || flagged.has(sec) || flagged.has("all");
   const askSlots = new Set(
     isFix ? last!.checks.filter((k) => k.outcome === "fail" && k.severity === "vendor_fixable").flatMap((k) =>
       k.code === "DOC_MISSING" ? required.filter((r) => !last!.inputs.sub.documents[r]) : k.id.startsWith("doc_") ? [k.id.slice(4) as DocSlot] : [],
@@ -75,6 +84,7 @@ export default function VendorPortal() {
       </Section>
     );
 
+  const india = sub.country === "IN";
   const set = (path: string, v: string) =>
     setSub((old) => {
       const n = structuredClone(old!) as unknown as Record<string, Record<string, string>>;
@@ -126,8 +136,7 @@ export default function VendorPortal() {
       )}
 
       <div className="grid gap-5">
-        {!isFix && (
-          <>
+        {show("business") && (
             <Section title="Business">
               <div className="grid gap-4 sm:grid-cols-2">
                 {F("Legal name (as on PAN / GST certificate)", "legal_name", { span: true })}
@@ -140,25 +149,52 @@ export default function VendorPortal() {
                 </label>
                 {F("Registered address", "address.line1", { span: true })}
                 {F("City", "address.city")}
-                {F("State", "address.state")}
-                {F("PIN code", "address.pincode", { mono: true })}
+                {F(india || sub.country === "US" ? "State" : "County / nation", "address.state")}
+                {F(india ? "PIN code" : sub.country === "US" ? "ZIP code" : "Postcode", "address.pincode", { mono: true })}
+                <label>
+                  <span className="label">Country</span>
+                  <select className="field" value={sub.country} onChange={(e) => set("country", e.target.value)}>
+                    {Object.entries(COUNTRY_NAME).map(([code, name]) => (
+                      <option key={code} value={code}>{name.replace(/^the /, "").replace(/^./, (x) => x.toUpperCase())}</option>
+                    ))}
+                  </select>
+                </label>
               </div>
             </Section>
+        )}
+        {show("tax") && (
             <Section title="Tax registration">
               <div className="grid gap-4 sm:grid-cols-2">
-                {F("GSTIN", "gstin", { mono: true, placeholder: "29ABCDE1234F1Z5" })}
-                {F("PAN", "pan", { mono: true, placeholder: "ABCDE1234F" })}
-                {required.includes("incorporation_certificate") && F("Company Identification Number (CIN)", "cin", { mono: true, span: true })}
+                {india ? (
+                  <>
+                    {F("GSTIN", "gstin", { mono: true, placeholder: "29ABCDE1234F1Z5" })}
+                    {F("PAN", "pan", { mono: true, placeholder: "ABCDE1234F" })}
+                    {required.includes("incorporation_certificate") && F("Company Identification Number (CIN)", "cin", { mono: true, span: true })}
+                  </>
+                ) : (
+                  F(sub.country === "US" ? "EIN (federal tax ID)" : "VAT number", "tax_id", { mono: true, placeholder: sub.country === "US" ? "12-3456789" : "GB123456789" })
+                )}
+                {isFix && sample && Object.entries(sample.fix_fields ?? {}).map(([k, v]) => (
+                  <div key={k} className="self-end">
+                    <button className="btn btn-quiet !py-1 text-[13px]" onClick={() => set(k, v)} disabled={(sub as unknown as Record<string, string>)[k] === v}>
+                      {(sub as unknown as Record<string, string>)[k] === v ? "Corrected value filled in" : "Fill in the corrected sample value"}
+                    </button>
+                  </div>
+                ))}
               </div>
             </Section>
+        )}
+        {show("bank") && (
             <Section title="Bank account for payments">
               <div className="grid gap-4 sm:grid-cols-2">
-                {F("Account holder name (as printed on cheque)", "bank.account_holder", { span: true })}
-                {F("Account number", "bank.account_number", { mono: true })}
-                {F("IFSC", "bank.ifsc", { mono: true, placeholder: "HDFC0001234" })}
+                {F(`Account holder name (as printed on ${india ? "cheque" : "bank letter"})`, "bank.account_holder", { span: true })}
+                {F(sub.country === "GB" ? "IBAN" : "Account number", "bank.account_number", { mono: true, placeholder: sub.country === "GB" ? "GB33 BUKB 2020 1555 5555 55" : "" })}
+                {sub.country !== "GB" && F(india ? "IFSC" : "Routing number", "bank.ifsc", { mono: true, placeholder: india ? "HDFC0001234" : "021000021" })}
                 {F("Bank name", "bank.bank_name")}
               </div>
             </Section>
+        )}
+        {show("business") && (
             <Section title="Contact">
               <div className="grid gap-4 sm:grid-cols-3">
                 {F("Name", "contact.name")}
@@ -166,10 +202,10 @@ export default function VendorPortal() {
                 {F("Phone", "contact.phone")}
               </div>
             </Section>
-          </>
         )}
 
-        <Section title={isFix ? "Documents" : "Documents"}>
+        {(!isFix || askSlots.size > 0) && (
+        <Section title="Documents">
           <ul className="divide-y divide-rule">
             {slots.map((slot) => {
               const up = uploads[slot];
@@ -180,7 +216,7 @@ export default function VendorPortal() {
                 <li key={slot} className="flex flex-wrap items-center gap-3 py-3">
                   <div className="min-w-[200px] flex-1">
                     <div className="font-semibold">
-                      {DOC_LABEL[slot]} {required.includes(slot) ? "" : <span className="font-normal text-ink-3">(optional)</span>}
+                      {docLabel(slot, sub.country)} {required.includes(slot) ? "" : <span className="font-normal text-ink-3">(optional)</span>}
                     </div>
                     <div className="text-[13px] text-ink-2">
                       {up ? (
@@ -224,6 +260,7 @@ export default function VendorPortal() {
           </ul>
           <p className="mt-2 text-[13px] text-ink-3">PDF, JPG or PNG up to 8 MB. Photos from a phone are fine.</p>
         </Section>
+        )}
       </div>
 
       <div className="mt-6 flex items-center justify-end gap-3">

@@ -5,7 +5,7 @@ import { loadScenarios } from "@/lib/engine/fixtures";
 export async function GET() {
   const list = loadScenarios().map((s) => ({
     id: s.id, title: s.title, invite: s.invite, sub: s.sub,
-    fix_documents: s.expected.fix_documents, expected_status: s.expected.status,
+    fix_documents: s.expected.fix_documents, fix_fields: s.expected.fix_fields ?? {}, expected_status: s.expected.status,
   }));
   return NextResponse.json(list);
 }

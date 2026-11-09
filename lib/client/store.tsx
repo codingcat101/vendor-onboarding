@@ -26,7 +26,7 @@ export interface AuditEvent {
 export type CaseStatus = Status | "INVITED" | "EXPIRED";
 
 export const STATUS_LABEL_PLAIN: Record<CaseStatus, string> = {
-  APPROVED: "approved", REJECTED: "rejected", PENDING_INTERNAL: "needs review", PENDING_VENDOR: "waiting on vendor", INVITED: "invited", EXPIRED: "expired",
+  APPROVED: "approved", REJECTED: "rejected", PENDING_INTERNAL: "pending (needs a reviewer)", PENDING_VENDOR: "pending (waiting on the vendor)", INVITED: "invited", EXPIRED: "expired",
 };
 
 export interface Case {

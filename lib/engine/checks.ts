@@ -5,10 +5,11 @@ import {
   ACCOUNT_RE, CIN_RE, GST_STATE_CODES, clean, expectedPanTypes, validateGstin, validatePan, validateTaxIdForCountry,
 } from "./ids";
 import { lookupIfsc } from "./ifsc";
+import { validateAbaRouting, validateIban } from "./ids";
 import { bestMatch, compareNames } from "./names";
 import { HARD_CODES, Policy, requiredDocs } from "./policy";
 import {
-  CheckResult, DOC_LABEL, DocSlot, ExistingVendor, ExtractedDoc, Invite, Stage, Submission, Tier,
+  COUNTRY_NAME, CheckResult, DOC_LABEL, DocSlot, docLabel, ExistingVendor, ExtractedDoc, Invite, Stage, Submission, Tier,
 } from "./types";
 
 export interface Ctx {
@@ -46,12 +47,20 @@ const notRead = (what: string, doc: string): Result =>
 const isIndia = (ctx: Ctx) => ctx.sub.country === "IN";
 const tail = (s: string, n = 4) => `…${s.slice(-n)}`;
 
+/** Documents accepted in place of the requested one: taught rules, plus bank letters outside India
+ *  (cancelled cheques are an Indian convention). */
+function substitutes(ctx: Ctx) {
+  const base = ctx.policy.doc_substitutes;
+  return ctx.sub.country === "IN" ? base : [...base, { slot: "cancelled_cheque" as DocSlot, accepts: "bank_letter" }];
+}
+
+
 /** A document is usable for cross-checks only if it was uploaded, readable, and the right type. */
 function usableDoc(ctx: Ctx, slot: DocSlot): ExtractedDoc | null {
   const d = ctx.docs[slot];
-  if (!d) return null;
+  if (!d || d.error) return null;
   if (d.confidence < ctx.policy.min_doc_confidence) return null;
-  const ok = d.doc_type === slot || ctx.policy.doc_substitutes.some((s) => s.slot === slot && s.accepts === d.doc_type);
+  const ok = d.doc_type === slot || substitutes(ctx).some((s) => s.slot === slot && s.accepts === d.doc_type);
   return ok ? d : null;
 }
 
@@ -73,6 +82,7 @@ const completeness: CheckDef[] = [
       ];
       if (sub.country === "IN") need.push(["GSTIN", sub.gstin], ["PAN", sub.pan], ["IFSC", sub.bank?.ifsc]);
       else need.push(["Tax ID", sub.tax_id]);
+      if (sub.country === "US") need.push(["Routing number", sub.bank?.ifsc]);
       const missing = need.filter(([, v]) => !String(v ?? "").trim()).map(([k]) => k);
       if (missing.length)
         return fail("vendor_fixable", "FIELD_MISSING", `Missing: ${missing.join(", ")}`, {
@@ -89,13 +99,14 @@ const completeness: CheckDef[] = [
     run: (ctx) => {
       const req = requiredDocs(ctx.tier, ctx.sub, ctx.policy);
       const missing = req.filter((d) => !ctx.sub.documents[d]);
+      const L = (d: DocSlot) => docLabel(d, ctx.sub.country);
       if (missing.length)
-        return fail("vendor_fixable", "DOC_MISSING", `Missing for ${ctx.tier} tier: ${missing.map((d) => DOC_LABEL[d]).join(", ")}`, {
-          vendor_message: `Please upload: ${missing.map((d) => DOC_LABEL[d]).join(", ")}.`,
-          evidence: { required: req.map((d) => DOC_LABEL[d]).join(", ") },
+        return fail("vendor_fixable", "DOC_MISSING", `Missing for ${ctx.tier} tier: ${missing.map(L).join(", ")}`, {
+          vendor_message: `Please upload: ${missing.map(L).join(", ")}.`,
+          evidence: { required: req.map(L).join(", ") },
         });
       return pass(`${req.length} of ${req.length} required documents uploaded (${ctx.tier} tier)`, {
-        required: req.map((d) => DOC_LABEL[d]).join(", "),
+        required: req.map(L).join(", "),
       });
     },
   },
@@ -119,13 +130,18 @@ const documentChecks: CheckDef[] = docSlots.map((slot) => ({
   run: (ctx) => {
     const d = ctx.docs[slot];
     if (!d) return skip("Not uploaded");
+    // The AI couldn't read it at all (service down, quota). Not the vendor's fault: a person looks.
+    if (d.error)
+      return fail("needs_review", "DOC_NOT_READ_AI", `The AI could not read the ${docLabel(slot, ctx.sub.country)} right now, so a person should check it by eye`, {
+        evidence: { reason: d.error.slice(0, 120) },
+      });
     const conf = Math.round(d.confidence * 100);
     if (d.confidence < ctx.policy.min_doc_confidence)
       return fail("vendor_fixable", "DOC_UNREADABLE", `${DOC_LABEL[slot]} could not be read reliably (confidence ${conf}%)`, {
         vendor_message: `Your ${DOC_LABEL[slot]} is hard to read. Please upload a clearer scan or photo.`,
         evidence: { confidence: conf },
       });
-    const substitute = ctx.policy.doc_substitutes.find((s) => s.slot === slot && s.accepts === d.doc_type);
+    const substitute = substitutes(ctx).find((s) => s.slot === slot && s.accepts === d.doc_type);
     if (d.doc_type !== slot && !substitute) {
       const what = DOC_TYPE_LABEL[d.doc_type] ?? d.doc_type;
       return fail("vendor_fixable", "DOC_WRONG_TYPE", `Uploaded as ${DOC_LABEL[slot]}, but it is ${what}`, {
@@ -135,7 +151,7 @@ const documentChecks: CheckDef[] = docSlots.map((slot) => ({
     }
     return pass(
       substitute
-        ? `Accepted ${DOC_TYPE_LABEL[d.doc_type] ?? d.doc_type} in place of ${DOC_LABEL[slot]} (policy rule)`
+        ? `Accepted ${DOC_TYPE_LABEL[d.doc_type] ?? d.doc_type} in place of ${DOC_LABEL[slot]}${ctx.sub.country === "IN" ? " (policy rule)" : ""}`
         : `Recognised as ${DOC_LABEL[slot]} (${conf}% confidence)`,
       { confidence: conf, read_by: d.source },
     );
@@ -172,10 +188,14 @@ const format: CheckDef[] = [
     applies: (ctx) => !isIndia(ctx),
     run: ({ sub }) => {
       const r = validateTaxIdForCountry(sub.country, sub.tax_id);
-      if (r.valid) return pass(`Tax ID format valid for ${sub.country}`);
-      return fail("vendor_fixable", "TAX_ID_FORMAT", `Tax ID "${sub.tax_id}" is not a valid format for ${sub.country}; expected ${r.expected}`, {
-        vendor_message: `The tax ID you entered doesn't match the format used in ${sub.country} (expected ${r.expected}). Please check it.`,
-      });
+      const where = COUNTRY_NAME[sub.country] ?? sub.country;
+      if (r.valid) return pass(`Tax ID is a valid ${r.expected.split(",")[0]} for ${where}`);
+      const looksIndian = validateGstin(sub.tax_id).valid;
+      return fail("vendor_fixable", "TAX_ID_FORMAT",
+        `Tax ID "${sub.tax_id}" is not valid for ${where}; expected ${r.expected}${looksIndian ? ". It is an Indian GSTIN" : ""}`, {
+          vendor_message: `The tax ID you entered${looksIndian ? " is an Indian GST number, but" : ""} doesn't match the format used in ${where}. Please enter your ${r.expected}.`,
+          evidence: { entered: sub.tax_id ?? "", country: where, expected: r.expected, looks_like_indian_gstin: looksIndian },
+        });
     },
   },
   {
@@ -221,6 +241,30 @@ const format: CheckDef[] = [
           vendor_message: `Your IFSC code belongs to ${r.bankName}, but you entered "${sub.bank.bank_name}". Please check which is correct.`,
         });
       return pass(`${r.ifsc} is a valid ${r.bankName} branch (offline IFSC registry)`);
+    },
+  },
+  {
+    id: "intl_bank",
+    stage: "format",
+    title: "Bank details valid for the country",
+    deps: ["form.bank", "form.country"],
+    applies: (ctx) => !isIndia(ctx),
+    run: ({ sub }) => {
+      if (sub.country === "GB") {
+        return validateIban(sub.bank.account_number) && clean(sub.bank.account_number).startsWith("GB")
+          ? pass(`UK IBAN ${tail(clean(sub.bank.account_number))} passes its mod-97 check`)
+          : fail("vendor_fixable", "IBAN_INVALID", "Account number is not a valid UK IBAN (mod-97 check failed)", {
+              vendor_message: "Please enter your full UK IBAN (it starts with GB and is 22 characters). It's printed on your bank letter or statement.",
+            });
+      }
+      if (sub.country === "US") {
+        return validateAbaRouting(sub.bank.ifsc ?? "")
+          ? pass(`Routing number ${sub.bank.ifsc} passes the ABA checksum`)
+          : fail("vendor_fixable", "ROUTING_INVALID", `Routing number "${sub.bank.ifsc}" fails the ABA checksum`, {
+              vendor_message: "Your 9-digit bank routing number doesn't look right. Please copy it from your bank letter or a cheque.",
+            });
+      }
+      return pass("No country-specific bank format check");
     },
   },
   {
@@ -354,7 +398,7 @@ const crossRef: CheckDef[] = [
       const accForm = clean(ctx.sub.bank.account_number);
       const ifscDoc = clean(d.fields.ifsc);
       const ifscForm = clean(ctx.sub.bank.ifsc);
-      if (accDoc !== accForm || (ifscDoc && ifscDoc !== ifscForm))
+      if (accDoc !== accForm || (ctx.sub.country === "IN" && ifscDoc && ifscDoc !== ifscForm))
         return fail("vendor_fixable", "DOC_BANK_MISMATCH",
           `Cheque shows A/c ${tail(accDoc)} / ${ifscDoc}; form says A/c ${tail(accForm)} / ${ifscForm}`, {
             vendor_message: `The bank details on your cancelled cheque (A/c ${tail(accDoc)}, IFSC ${ifscDoc}) don't match what you entered (A/c ${tail(accForm)}, IFSC ${ifscForm}). Please correct the form or upload the cheque for the right account.`,

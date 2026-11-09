@@ -5,8 +5,8 @@ import type { Tier } from "@/lib/engine/types";
 export const STATUS_META: Record<CaseStatus, { label: string; stamp: string; color: string; bg: string }> = {
   APPROVED: { label: "Approved", stamp: "Approved", color: "var(--approve)", bg: "var(--approve-bg)" },
   REJECTED: { label: "Rejected", stamp: "Rejected", color: "var(--reject)", bg: "var(--reject-bg)" },
-  PENDING_INTERNAL: { label: "Needs review", stamp: "For review", color: "var(--review)", bg: "var(--review-bg)" },
-  PENDING_VENDOR: { label: "Waiting on vendor", stamp: "Returned", color: "var(--wait)", bg: "var(--wait-bg)" },
+  PENDING_INTERNAL: { label: "Pending: review", stamp: "Pending", color: "var(--review)", bg: "var(--review-bg)" },
+  PENDING_VENDOR: { label: "Pending: vendor", stamp: "Pending", color: "var(--wait)", bg: "var(--wait-bg)" },
   INVITED: { label: "Invited", stamp: "Invited", color: "var(--ink-2)", bg: "var(--tint)" },
   EXPIRED: { label: "Expired", stamp: "Expired", color: "var(--ink-3)", bg: "var(--tint)" },
 };

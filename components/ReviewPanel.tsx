@@ -91,7 +91,7 @@ export function ReviewPanel({ c, run }: { c: Case; run: CaseRun }) {
     );
 
   return (
-    <Section title={signoffOnly ? "Sign-off needed" : "A reviewer decides"} aside={<span className="text-[13px] text-ink-3">Reviewing as {REVIEWER}</span>}>
+    <Section title={signoffOnly ? "Pending: sign-off needed" : "Pending: a reviewer decides"} aside={<span className="text-[13px] text-ink-3">Reviewing as {REVIEWER}</span>}>
       {!decided && (
         <>
           <ul className="mb-3 list-disc pl-5 text-[14px]">

@@ -16,6 +16,7 @@ export interface Scenario {
     status: string;
     reasons: string[];
     fix_documents: Partial<Record<DocSlot, string>>;
+    fix_fields?: Record<string, string>;
     document_truth: Record<string, Record<string, string>>;
     [k: string]: unknown;
   };
