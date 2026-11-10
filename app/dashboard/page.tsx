@@ -90,7 +90,7 @@ export default function Dashboard() {
     return (
       <Section title="Dashboard">
         <p className="py-8 text-center text-ink-2">
-          No submissions yet. Go to <Link className="underline" href="/">Cases</Link> and use “Run all 8 at once” to fill this in.
+          No submissions yet. Go to <Link className="underline" href="/">Cases</Link> and use “Run all … at once” in the sample vendors panel to fill this in.
         </p>
       </Section>
     );

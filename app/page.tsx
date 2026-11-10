@@ -89,7 +89,7 @@ export default function CasesPage() {
               setSeeding(null);
             }}
           >
-            {seeding ? `Running ${seeding}…` : "Run all 8 at once"}
+            {seeding ? `Running ${seeding}…` : `Run all ${samples?.length ?? ""} at once`}
           </button>
         }
       >

@@ -434,7 +434,7 @@ npm test           # 48 tests
 **Two-minute demo** (each visitor gets a private sandbox; "Reset demo" starts over):
 
 1. **Cases → Ganga Office Supplies → Submit.** Watch the documents being read and the checks run; it's returned for a wrong document. Open the fix page, attach the correct file, and only 4 of 16 checks re-run.
-2. **Cases → Run all 8 at once**, then **Dashboard.**
+2. **Cases → Run all 9 at once**, then **Dashboard.**
 3. **Reviewer → Review queue → Sharma Trading Co.** Approve with a reason, add the suggested rule, and Gupta Trading Company is approved on its own.
 4. **Apex Facility Services → "Try to teach an exception anyway"** is refused.
 5. **Lotus Print House → "+3 days" three times:** reminder, escalation, closed.
