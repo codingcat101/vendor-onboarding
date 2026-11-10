@@ -1,0 +1,15 @@
+{
+  "slot": "incorporation_certificate",
+  "file": "docs/incorporation_certificate.pdf",
+  "doc_type": "incorporation_certificate",
+  "fields": {
+    "cin": "U74999TG2018PTC127734",
+    "legal_name": "LUMEN PAYROLL SERVICES PRIVATE LIMITED",
+    "pan": "AAFCL3391R"
+  },
+  "confidence": 0.95,
+  "source": "ai",
+  "notes": "Fictional specimen certificate of incorporation.",
+  "ms": 4206,
+  "model": "gemini-3.6-flash"
+}

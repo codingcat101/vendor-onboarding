@@ -1,0 +1,16 @@
+{
+  "slot": "cancelled_cheque",
+  "file": "docs/cancelled_cheque.pdf",
+  "doc_type": "cancelled_cheque",
+  "fields": {
+    "account_holder": "LUMEN PAYROLL SERVICES PRIVATE LIMITED",
+    "account_number": "59381666226318",
+    "bank_name": "HDFC BANK",
+    "ifsc": "HDFC0000240"
+  },
+  "confidence": 0.95,
+  "source": "ai",
+  "notes": "Specimen cancelled cheque.",
+  "ms": 3788,
+  "model": "gemini-3.6-flash"
+}

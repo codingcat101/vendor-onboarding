@@ -14,13 +14,14 @@ const TIMEOUT_MS = Number(process.env.GEMINI_TIMEOUT_MS || 25000);
 
 const PROMPT = `You are reading ONE document uploaded during vendor onboarding (vendors are mostly in India, some abroad).
 1. Decide what the document actually is. doc_type must be one of:
-   gst_certificate, pan_card, cancelled_cheque, incorporation_certificate, invoice, bank_letter, purchase_order, aadhaar_card, other.
+   gst_certificate, pan_card, cancelled_cheque, incorporation_certificate, security_certificate (an ISO 27001 certificate or SOC 2 report), invoice, bank_letter, purchase_order, aadhaar_card, other.
    Judge by content, not by any file name.
 2. Extract ONLY the fields that are visibly printed (leave others as empty strings). Copy values exactly; do not correct or guess.
    - gst_certificate: gstin, legal_name, trade_name, state
    - pan_card: pan, name
    - cancelled_cheque / bank_letter: account_number (an IBAN if shown), ifsc (or US routing number / UK sort code), account_holder, bank_name
    - incorporation_certificate: cin, legal_name, pan
+   - security_certificate: holder (organisation it is issued to), standard (e.g. "ISO/IEC 27001:2022" or "SOC 2 Type II"), certificate_number, issuer, valid_until (as YYYY-MM-DD)
    - invoice: gstin
 3. confidence: 0..1, your confidence that doc_type AND the key identifiers are read correctly. Lower it for blur, skew, glare or cut-off text.
 4. notes: one short sentence on anything unusual (e.g. "photo is skewed", "looks edited", "document is an invoice").`;
@@ -32,7 +33,7 @@ const SCHEMA = {
     fields: {
       type: "OBJECT",
       properties: Object.fromEntries(
-        ["gstin", "legal_name", "trade_name", "state", "pan", "name", "account_number", "ifsc", "account_holder", "bank_name", "cin"].map(
+        ["gstin", "legal_name", "trade_name", "state", "pan", "name", "account_number", "ifsc", "account_holder", "bank_name", "cin", "holder", "standard", "certificate_number", "issuer", "valid_until"].map(
           (k) => [k, { type: "STRING" }],
         ),
       ),

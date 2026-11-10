@@ -7,12 +7,15 @@ import { Upload, fileRef } from "@/lib/client/pipeline";
 import { SAMPLE_BLURB, sampleFileUrl, useScenarios } from "@/lib/client/scenarios";
 import { caseStatus, useStore } from "@/lib/client/store";
 import { requiredDocs } from "@/lib/engine/policy";
-import { COUNTRY_NAME, DocSlot, Submission, docLabel } from "@/lib/engine/types";
+import { ALL_DOC_SLOTS, COUNTRY_NAME, DocSlot, Submission, docLabel } from "@/lib/engine/types";
 import { Section } from "@/components/ui";
 
 const BUYER_COMPANY = "Northwind Retail Pvt Ltd";
 const CONSTITUTIONS = ["Private Limited Company", "Public Limited Company", "Limited Liability Partnership", "Partnership Firm", "Proprietorship"];
-const ALL_SLOTS: DocSlot[] = ["gst_certificate", "pan_card", "cancelled_cheque", "incorporation_certificate"];
+const ALL_SLOTS: DocSlot[] = ALL_DOC_SLOTS;
+
+/** Checks whose fix is a new upload of a particular document. */
+const CHECK_SLOT: Record<string, DocSlot> = { security_cert_valid: "security_certificate", cheque_matches: "cancelled_cheque" };
 
 const emptySub = (name: string, email: string): Submission => ({
   legal_name: name, trade_name: "", constitution: CONSTITUTIONS[0], country: "IN",
@@ -56,7 +59,7 @@ export default function VendorPortal() {
     } else setSub(emptySub(c.invite.vendor_name, c.invite.vendor_email));
   }, [c, sub, last, sample, samples]);
 
-  const required = useMemo(() => (c && sub ? requiredDocs(c.tier, sub, s.policy) : []), [c, sub, s.policy]);
+  const required = useMemo(() => (c && sub ? requiredDocs(c.tier, sub, s.policy, c.invite) : []), [c, sub, s.policy]);
   const slots = ALL_SLOTS.filter((x) => required.includes(x) || uploads[x]);
   const asks = isFix ? last!.decision.vendor_actions : [];
   // In the fix flow, show only the parts of the form that need fixing.
@@ -70,7 +73,11 @@ export default function VendorPortal() {
   const show = (sec: string) => !isFix || flagged.has(sec) || flagged.has("all");
   const askSlots = new Set(
     isFix ? last!.checks.filter((k) => k.outcome === "fail" && k.severity === "vendor_fixable").flatMap((k) =>
-      k.code === "DOC_MISSING" ? required.filter((r) => !last!.inputs.sub.documents[r]) : k.id.startsWith("doc_") ? [k.id.slice(4) as DocSlot] : [],
+      k.code === "DOC_MISSING"
+        ? required.filter((r) => !last!.inputs.sub.documents[r])
+        : k.id.startsWith("doc_")
+          ? [k.id.slice(4) as DocSlot]
+          : CHECK_SLOT[k.id] ? [CHECK_SLOT[k.id]] : [],
     ) : [],
   );
 

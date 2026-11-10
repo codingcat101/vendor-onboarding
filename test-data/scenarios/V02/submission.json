@@ -28,6 +28,7 @@
     "gst_certificate": "docs/gst_certificate.pdf",
     "pan_card": "docs/pan_card.pdf",
     "cancelled_cheque": "docs/cancelled_cheque.pdf",
-    "incorporation_certificate": "docs/incorporation_certificate.pdf"
+    "incorporation_certificate": "docs/incorporation_certificate.pdf",
+    "security_certificate": "docs/security_certificate.pdf"
   }
 }

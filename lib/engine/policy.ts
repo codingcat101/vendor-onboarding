@@ -50,8 +50,10 @@ export function computeTier(invite: Invite, policy: Policy): { tier: Tier; why: 
   return { tier: "LOW", why: `Expected spend ${lakh(spend)} is below ${lakh(policy.tiers.low_max_inr)} and no data access` };
 }
 
-export function requiredDocs(tier: Tier, sub: Submission, policy: Policy): DocSlot[] {
+export function requiredDocs(tier: Tier, sub: Submission, policy: Policy, invite?: Invite): DocSlot[] {
   const docs = [...policy.required_docs[tier]];
+  // Vendors that will touch our data or systems must show security evidence, whatever the spend.
+  if (invite?.data_access) docs.push("security_certificate");
   if (sub.country !== "IN") return docs.filter((d) => d !== "gst_certificate" && d !== "pan_card");
   // Only companies have a certificate of incorporation.
   const isCompany = /company|limited liability partnership|llp/i.test(sub.constitution);

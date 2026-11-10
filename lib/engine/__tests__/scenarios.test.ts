@@ -12,7 +12,7 @@ const byId = Object.fromEntries(scenarios.map((s) => [s.id, s]));
 
 function run(id: string, policy = DEFAULT_POLICY) {
   const s = byId[id];
-  return runOnboarding({ sub: s.sub, invite: s.invite, docs: truthReadings(s), master, policy });
+  return runOnboarding({ sub: s.sub, invite: s.invite, docs: truthReadings(s), master, policy, asOf: "2026-11-10" });
 }
 
 describe("first decision for every scenario matches expected.json", () => {
@@ -45,6 +45,39 @@ describe("follow-up loop: incremental re-check (V03 wrong document)", () => {
     expect(second.rechecked).not.toContain("gstin_format");
     const carried = second.checks.filter((c) => c.carried_over).length;
     expect(carried).toBeGreaterThan(second.rechecked!.length);
+  });
+});
+
+describe("security certificate for data-access vendors (V10)", () => {
+  it("an expired ISO 27001 certificate goes back to the vendor; the renewed one re-runs only the certificate checks", () => {
+    const s = byId.V10;
+    const docs = truthReadings(s);
+    const first = runOnboarding({ sub: s.sub, invite: s.invite, docs, master, policy: DEFAULT_POLICY, asOf: "2026-11-10" });
+    expect(first.decision.status).toBe("PENDING_VENDOR");
+    expect(first.decision.vendor_actions[0].message).toMatch(/expired on 30 Sept 2026|expired on 30 Sep 2026/);
+    const fixedSub = { ...s.sub, documents: { ...s.sub.documents, ...s.expected.fix_documents } };
+    const fixedDocs = truthReadings(s, fixedSub.documents);
+    const changed = diffInputs({ sub: s.sub, docs }, { sub: fixedSub, docs: fixedDocs });
+    const second = runOnboarding({ sub: fixedSub, invite: s.invite, docs: fixedDocs, master, policy: DEFAULT_POLICY, previous: first, changed, asOf: "2026-11-10" });
+    expect(second.decision.status).toBe("PENDING_INTERNAL"); // strategic: sign-off still needed
+    expect(second.decision.reasons.map((r) => r.code)).toEqual(["STRATEGIC_SIGNOFF_REQUIRED"]);
+    expect(second.rechecked).toEqual(expect.arrayContaining(["doc_security_certificate", "security_cert_valid"]));
+    expect(second.rechecked).not.toContain("gstin_format");
+  });
+  it("a certificate close to expiry passes with a warning; a missing one is asked for", () => {
+    const s = byId.V02;
+    const r = runOnboarding({ sub: s.sub, invite: s.invite, docs: truthReadings(s), master, policy: DEFAULT_POLICY, asOf: "2028-02-15" });
+    expect(r.checks.find((c) => c.id === "security_cert_valid")!.outcome).toBe("warn");
+    const { security_certificate: _, ...rest } = s.sub.documents;
+    const r2 = runOnboarding({ sub: { ...s.sub, documents: rest }, invite: s.invite, docs: truthReadings(s, rest), master, policy: DEFAULT_POLICY, asOf: "2026-11-10" });
+    expect(r2.decision.vendor_actions[0].message).toMatch(/Security certificate/);
+  });
+  it("a certificate issued to another company needs a person (could be a group certificate)", () => {
+    const s = byId.V02;
+    const docs = truthReadings(s);
+    docs.security_certificate = { ...docs.security_certificate!, fields: { ...docs.security_certificate!.fields, holder: "NIMBUS HOLDINGS GROUP PLC" } };
+    const r = runOnboarding({ sub: s.sub, invite: s.invite, docs, master, policy: DEFAULT_POLICY, asOf: "2026-11-10" });
+    expect(r.decision.reasons.map((x) => x.code)).toContain("SECURITY_CERT_NAME_MISMATCH");
   });
 });
 

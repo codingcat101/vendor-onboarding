@@ -16,7 +16,7 @@ describe.skipIf(!hasReadings)("decisions from real AI readings", () => {
     it(`${s.id} → ${s.expected.status}`, () => {
       const docs: Partial<Record<DocSlot, ExtractedDoc>> = {};
       for (const [slot, file] of Object.entries(s.sub.documents) as [DocSlot, string][]) docs[slot] = cachedReading(s.id, slot, file)!;
-      const r = runOnboarding({ sub: s.sub, invite: s.invite, docs, master, policy: DEFAULT_POLICY });
+      const r = runOnboarding({ sub: s.sub, invite: s.invite, docs, master, policy: DEFAULT_POLICY, asOf: "2026-11-10" });
       expect(r.decision.status).toBe(s.expected.status);
       for (const code of s.expected.reasons) expect(r.decision.reasons.map((x) => x.code)).toContain(code);
     });

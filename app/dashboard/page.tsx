@@ -18,6 +18,9 @@ const REASON_LABEL: Record<string, string> = {
   DOC_NAME_MISMATCH: "Document in another name",
   BANK_NAME_MISMATCH: "Bank account in another name",
   STRATEGIC_SIGNOFF_REQUIRED: "Strategic sign-off",
+  SECURITY_CERT_EXPIRED: "Security certificate expired",
+  SECURITY_CERT_WRONG_STANDARD: "Wrong security standard",
+  SECURITY_CERT_NAME_MISMATCH: "Certificate in another name",
   GSTIN_INVALID: "GSTIN typo",
   PAN_INVALID: "PAN typo",
   IFSC_INVALID: "IFSC not a real branch",
@@ -111,11 +114,30 @@ export default function Dashboard() {
 
   const neededPerson = submitted.filter((c) => c.final || c.runs.some((r) => r.decision.status === "PENDING_INTERNAL" && r.trigger !== "policy_change"));
   const noPerson = submitted.length - neededPerson.length;
+  // Onboarding cycle time = approval date − request (invite) date.
   const approvalTimes = submitted.map((c) => {
     const a = approvedAt(c);
-    return a ? new Date(a).getTime() - new Date(c.runs[0].at).getTime() : null;
+    return a ? new Date(a).getTime() - new Date(c.created_at).getTime() : null;
   }).filter((x): x is number => x !== null);
   const med = median(approvalTimes);
+  // First-pass completeness = first submissions with nothing for the vendor to fix ÷ submissions.
+  const firstPass = submitted.filter((c) => !c.runs[0].checks.some((k) => k.outcome === "fail" && k.severity === "vendor_fixable")).length;
+  // Duplicate / identity-overlap rate = submissions matching an existing vendor's GSTIN, PAN or bank account ÷ submissions.
+  const OVERLAP = new Set(["DUPLICATE_VENDOR", "GSTIN_BELONGS_TO_OTHER_VENDOR", "PAN_BELONGS_TO_OTHER_VENDOR", "BANK_ACCOUNT_SHARED"]);
+  const overlaps = submitted.filter((c) => c.runs[0].checks.some((k) => k.outcome === "fail" && k.code && OVERLAP.has(k.code))).length;
+  const pct = (n: number) => `${Math.round((100 * n) / submitted.length)}%`;
+  // Security certificates on file, with expiry.
+  const certs = submitted
+    .map((c) => {
+      const r = c.runs.at(-1)!.inputs.docs.security_certificate;
+      if (!r?.fields.valid_until) return null;
+      const until = new Date(r.fields.valid_until);
+      if (Number.isNaN(until.getTime())) return null;
+      const days = Math.floor((until.getTime() - now.getTime()) / 86_400_000);
+      return { c, standard: r.fields.standard ?? "", until, days };
+    })
+    .filter((x): x is NonNullable<typeof x> => !!x)
+    .sort((a, b) => a.days - b.days);
   const waiting = cases.filter((c) => caseStatus(c) === "PENDING_VENDOR");
   const fraud = submitted.filter((c) => c.runs.at(-1)!.checks.some((k) => k.hard && k.outcome === "fail"));
 
@@ -153,9 +175,11 @@ export default function Dashboard() {
 
   return (
     <div className="grid gap-6">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
         <Tile value={`${noPerson} of ${submitted.length}`} label="Handled with no person involved" note="Approved, rejected or sent back automatically" />
-        <Tile value={med === null ? "—" : duration(med)} label="Median time to approval" note={`From submission, across ${approvalTimes.length} approved`} />
+        <Tile value={med === null ? "—" : duration(med)} label="Onboarding cycle time (median)" note={`Approval date − request date, across ${approvalTimes.length} approved`} />
+        <Tile value={pct(firstPass)} label="First-pass completeness" note={`${firstPass} of ${submitted.length} first submissions had nothing for the vendor to fix`} />
+        <Tile value={pct(overlaps)} label="Duplicate / identity-overlap rate" note={`${overlaps} of ${submitted.length} matched an existing vendor's GSTIN, PAN or bank account`} />
         <Tile value={String(waiting.length)} label="Pending on vendors" note={waiting.length ? `Oldest: ${Math.max(...waiting.map((c) => daysWaiting(c, now)))} days` : "None"} />
         <Tile value={String(fraud.length)} label="Stopped by fraud checks" note="Can't be overridden" />
       </div>
@@ -189,6 +213,33 @@ export default function Dashboard() {
           </dl>
         </Section>
       </div>
+
+      {certs.length > 0 && (
+        <Section title="Security certificates on file" aside={<span className="text-[13px] text-ink-3">Vendors with data access · renewal flagged 90 days ahead</span>}>
+          <table className="w-full text-left text-[14px]">
+            <thead className="text-[13px] text-ink-3">
+              <tr className="border-b border-rule">
+                <th className="py-1.5 font-medium">Vendor</th>
+                <th className="hidden py-1.5 font-medium sm:table-cell">Standard</th>
+                <th className="py-1.5 font-medium">Valid until</th>
+                <th className="py-1.5 font-medium">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {certs.map(({ c, standard, until, days }) => (
+                <tr key={c.id} className="border-b border-rule last:border-0">
+                  <td className="py-2"><Link className="font-semibold hover:underline" href={`/cases/${c.id}`}>{caseName(c)}</Link></td>
+                  <td className="hidden py-2 text-ink-2 sm:table-cell">{standard}</td>
+                  <td className="py-2 tabular-nums">{until.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</td>
+                  <td className="py-2 font-semibold" style={{ color: days < 0 ? "var(--reject)" : days < 90 ? "var(--wait)" : "var(--approve)" }}>
+                    {days < 0 ? `Expired ${-days} days ago` : days < 90 ? `Expires in ${days} days` : "Valid"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Section>
+      )}
 
       {waiting.length > 0 && (
         <Section title="Waiting on vendors" aside={<span className="text-[13px] text-ink-3">The follow-up agent handles these</span>}>

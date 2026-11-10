@@ -14,6 +14,8 @@ export interface RunInput {
   /** For a resubmission: the previous run and which inputs changed. Unchanged checks are carried over. */
   previous?: RunResult;
   changed?: string[];
+  /** "Today" for date checks; defaults to now. */
+  asOf?: string;
 }
 
 const depHit = (deps: string[], changed: string[]) =>
@@ -21,7 +23,7 @@ const depHit = (deps: string[], changed: string[]) =>
 
 export function runOnboarding(input: RunInput): RunResult {
   const { tier } = computeTier(input.invite, input.policy);
-  const ctx: Ctx = { sub: input.sub, invite: input.invite, tier, policy: input.policy, docs: input.docs, master: input.master };
+  const ctx: Ctx = { sub: input.sub, invite: input.invite, tier, policy: input.policy, docs: input.docs, master: input.master, asOf: input.asOf ? new Date(input.asOf) : new Date() };
   const prevById = new Map((input.previous?.checks ?? []).map((c) => [c.id, c]));
   const rechecked: string[] = [];
 

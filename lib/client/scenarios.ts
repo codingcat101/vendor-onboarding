@@ -23,6 +23,7 @@ export const SAMPLE_BLURB: Record<string, { name: string; what: string }> = {
   V07: { name: "Orion Engineering Works", what: "GSTIN is real but registered to someone else" },
   V08: { name: "Lotus Print House", what: "Cancelled cheque missing; vendor goes quiet" },
   V09: { name: "Thames Precision Tools (UK)", what: "Enters an Indian GSTIN as its UK tax ID" },
+  V10: { name: "Lumen Payroll Services", what: "Gets payroll data access; ISO 27001 certificate has expired" },
 };
 
 let cache: SampleScenario[] | null = null;

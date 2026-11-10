@@ -9,7 +9,7 @@ import { validateAbaRouting, validateIban } from "./ids";
 import { bestMatch, compareNames } from "./names";
 import { HARD_CODES, Policy, requiredDocs } from "./policy";
 import {
-  COUNTRY_NAME, CheckResult, DOC_LABEL, DocSlot, docLabel, ExistingVendor, ExtractedDoc, Invite, Stage, Submission, Tier,
+  ALL_DOC_SLOTS, COUNTRY_NAME, CheckResult, DOC_LABEL, DocSlot, docLabel, ExistingVendor, ExtractedDoc, Invite, Stage, Submission, Tier,
 } from "./types";
 
 export interface Ctx {
@@ -19,6 +19,8 @@ export interface Ctx {
   policy: Policy;
   docs: Partial<Record<DocSlot, ExtractedDoc>>;
   master: ExistingVendor[];
+  /** "Today" for date checks (the app's clock, so the demo can skip ahead). */
+  asOf: Date;
 }
 
 type Result = Omit<CheckResult, "id" | "stage" | "title">;
@@ -97,7 +99,7 @@ const completeness: CheckDef[] = [
     title: "Documents required for this tier uploaded",
     deps: ["form.documents", "invite", "policy", "form.constitution"],
     run: (ctx) => {
-      const req = requiredDocs(ctx.tier, ctx.sub, ctx.policy);
+      const req = requiredDocs(ctx.tier, ctx.sub, ctx.policy, ctx.invite);
       const missing = req.filter((d) => !ctx.sub.documents[d]);
       const L = (d: DocSlot) => docLabel(d, ctx.sub.country);
       if (missing.length)
@@ -115,7 +117,7 @@ const completeness: CheckDef[] = [
 // ---------------------------------------------------------------------------
 // Document check (one per slot) — is each upload what it claims to be, and readable?
 // ---------------------------------------------------------------------------
-const docSlots: DocSlot[] = ["gst_certificate", "pan_card", "cancelled_cheque", "incorporation_certificate"];
+const docSlots: DocSlot[] = ALL_DOC_SLOTS;
 const DOC_TYPE_LABEL: Record<string, string> = {
   ...DOC_LABEL, invoice: "an invoice", bank_letter: "a bank letter", purchase_order: "a purchase order",
   aadhaar_card: "an Aadhaar card", other: "an unrelated document",
@@ -285,7 +287,7 @@ const format: CheckDef[] = [
     stage: "format",
     title: "Company Identification Number (CIN) format",
     deps: ["form.cin", "invite", "form.constitution"],
-    applies: (ctx) => isIndia(ctx) && requiredDocs(ctx.tier, ctx.sub, ctx.policy).includes("incorporation_certificate"),
+    applies: (ctx) => isIndia(ctx) && requiredDocs(ctx.tier, ctx.sub, ctx.policy, ctx.invite).includes("incorporation_certificate"),
     run: ({ sub }) =>
       CIN_RE.test(clean(sub.cin))
         ? pass(`CIN ${sub.cin} is well-formed`)
@@ -455,6 +457,60 @@ const crossRef: CheckDef[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// Compliance evidence — vendors with data access
+// ---------------------------------------------------------------------------
+const DAY = 86_400_000;
+const fmtDate = (d: Date) => d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+
+function parseDate(raw: string | undefined): Date | null {
+  if (!raw) return null;
+  const s = raw.trim();
+  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  m = s.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/); // DD/MM/YYYY
+  if (m) return new Date(Date.UTC(+m[3], +m[2] - 1, +m[1]));
+  const t = Date.parse(s);
+  return Number.isNaN(t) ? null : new Date(t);
+}
+
+const compliance: CheckDef[] = [
+  {
+    id: "security_cert_valid",
+    stage: "cross_reference",
+    title: "Security certificate is current and covers this vendor",
+    deps: ["doc.security_certificate", "form.legal_name", "form.trade_name", "policy"],
+    applies: (ctx) => !!ctx.sub.documents.security_certificate,
+    run: (ctx) => {
+      const d = usableDoc(ctx, "security_certificate");
+      if (!d) return skip("Waiting for a valid security certificate");
+      const std = d.fields.standard ?? "";
+      if (!/27001|SOC\s*2/i.test(std))
+        return fail("vendor_fixable", "SECURITY_CERT_WRONG_STANDARD", `Certificate is for "${std || "an unknown standard"}", not ISO 27001 or SOC 2`, {
+          vendor_message: "Please upload an ISO/IEC 27001 certificate or a SOC 2 report for your organisation.",
+          evidence: { standard: std },
+        });
+      const until = parseDate(d.fields.valid_until);
+      if (!until) return notRead("expiry date", "security certificate");
+      const days = Math.floor((until.getTime() - ctx.asOf.getTime()) / DAY);
+      if (days < 0)
+        return fail("vendor_fixable", "SECURITY_CERT_EXPIRED", `${std} certificate expired on ${fmtDate(until)} (${-days} days ago)`, {
+          vendor_message: `Your ${std} certificate expired on ${fmtDate(until)}. Please upload the current certificate.`,
+          evidence: { standard: std, valid_until: fmtDate(until), days_past: -days },
+        });
+      const m = bestMatch(d.fields.holder ?? "", [ctx.sub.legal_name, ctx.sub.trade_name], ctx.policy.name_equivalences, ctx.sub.constitution);
+      if (m.verdict !== "match")
+        return fail("needs_review", "SECURITY_CERT_NAME_MISMATCH",
+          `Certificate is issued to "${d.fields.holder}", not "${ctx.sub.legal_name}". It may be a group or parent-company certificate; a person should confirm it covers this vendor`, {
+            evidence: { holder: d.fields.holder ?? "", vendor: ctx.sub.legal_name, similarity: m.score },
+          });
+      if (days < 90)
+        return warn(`${std} certificate is valid but expires on ${fmtDate(until)}, in ${days} days`, { valid_until: fmtDate(until), days_left: days });
+      return pass(`${std} certificate issued to ${d.fields.holder}, valid until ${fmtDate(until)}`, { valid_until: fmtDate(until), days_left: days });
+    },
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Fraud screen — against vendors already on file
 // ---------------------------------------------------------------------------
 const fraud: CheckDef[] = [
@@ -507,7 +563,7 @@ const fraud: CheckDef[] = [
   },
 ];
 
-export const CHECKS: CheckDef[] = [...completeness, ...documentChecks, ...format, ...crossRef, ...fraud];
+export const CHECKS: CheckDef[] = [...completeness, ...documentChecks, ...format, ...crossRef, ...compliance, ...fraud];
 
 // keep tree-shakers / linters aware this is used for display
 export const STATE_NAMES = Object.values(GST_STATE_CODES);

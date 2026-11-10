@@ -8,7 +8,7 @@ Before a company pays a new vendor, someone has to confirm the vendor is who the
 
 This project is a working onboarding process that takes a vendor's form and documents and returns **Approved**, **Pending** or **Rejected**, with every reason visible. AI reads the documents; plain, auditable code makes every decision; anything the vendor can fix goes back to them automatically and is chased until it's resolved; anything unclear goes to a person, who can teach the process a rule for next time, inside guardrails that no rule can relax.
 
-On 23 test documents, the AI identified every document type and read 75 of 76 fields correctly (98.7%), at 6.5 seconds per document. All 9 sample vendors, including five fraud and failure scenarios, reach the expected decision from real AI readings. 48 automated tests cover the checks, the fix loop, the teaching and the guardrails.
+On 23 test documents, the AI identified every document type and read 75 of 76 fields correctly (98.7%), at 6.5 seconds per document. All 10 sample vendors, including seven fraud and failure scenarios, reach the expected decision from real AI readings. 53 automated tests cover the checks, the fix loop, the teaching and the guardrails.
 
 ---
 
@@ -67,11 +67,12 @@ The last cause matters most for scale: when a reviewer decides that "Traders" an
 
 | Stakeholder | What they need | What this process gives them |
 |---|---|---|
-| Buyer (procurement) | Vendor active quickly, without chasing | Invite in one step; escalation only if the vendor goes quiet |
+| Buyer (procurement) | Vendor active quickly, without chasing | Invite in one step; every case shows its open items and who acts next; escalation only if the vendor goes quiet |
 | Vendor | Know exactly what's wrong, fix only that | A fix page listing only the items to change |
 | Reviewer (AP / finance) | Only see cases that need judgment | Review queue with evidence side by side; can teach a rule |
 | Finance controller | No payments to the wrong party | Fraud checks that can't be overridden; risk-based tiers |
-| Auditor | Why each vendor was approved | Every check, its evidence, every message and every rule change, with who and why |
+| Auditor | Why each vendor was approved | A "Prepared for review" packet per vendor (vendor record draft, evidence checklist, exception report), downloadable as JSON; every message and rule change, with who and why |
+| Finance / ERP owner | Clean vendor master data | Vendor record as an ERP-ready CSV; bank details flagged for an independent call-back before the first payment |
 
 ---
 
@@ -132,7 +133,7 @@ flowchart TD
 | Standard | ₹5L to ₹1 Cr | + PAN card | Automatic if all checks pass |
 | Strategic | Over ₹1 Cr, or access to data or systems | + Certificate of incorporation | A person always signs off |
 
-Outside India, a bank letter replaces the cancelled cheque and GST/PAN documents aren't required.
+Outside India, a bank letter replaces the cancelled cheque and GST/PAN documents aren't required. Any vendor that will get access to company data or systems must also upload a **security certificate (ISO 27001 or SOC 2)**, whatever the spend; it must be current and issued to the vendor.
 
 ### 6.3 Every check
 
@@ -152,6 +153,7 @@ Outside India, a bank letter replaces the cancelled cheque and GST/PAN documents
 | Cross-reference | Documents match the form | Certificate or PAN card in another name; different numbers | **Fraud → `DOC_NAME_MISMATCH`**; Review → `DOC_NAME_NEAR_MATCH`, `DOC_GSTIN_MISMATCH`, `DOC_PAN_MISMATCH`, `DOC_COI_MISMATCH`, `DOC_FIELD_NOT_READ` |
 | Cross-reference | Cheque matches bank details | Typo in account number | Vendor fix → `DOC_BANK_MISMATCH` |
 | Cross-reference | Bank account holder is the vendor | Payments going to a third party | **Fraud → `BANK_NAME_MISMATCH`**; Review → `BANK_NAME_NEAR_MATCH` |
+| Compliance | Security certificate (data-access vendors) | Wrong standard, expired, or issued to another company | Vendor fix → `SECURITY_CERT_WRONG_STANDARD`, `SECURITY_CERT_EXPIRED`; Review → `SECURITY_CERT_NAME_MISMATCH` (may be a group certificate); expiring within 90 days → note |
 | Fraud screen | Bank account not used by another vendor | Classic fake-vendor pattern | **Fraud → `BANK_ACCOUNT_SHARED`** |
 | Fraud screen | GSTIN / PAN not on file for another vendor | Borrowed identity; duplicate vendor | **Fraud → `GSTIN_BELONGS_TO_OTHER_VENDOR`, `PAN_BELONGS_TO_OTHER_VENDOR`**; Review → `DUPLICATE_VENDOR` |
 
@@ -294,7 +296,7 @@ flowchart TD
 
 ## 10. Edge cases
 
-All 9 sample vendors are in the live app ("Sample vendors" panel). Companies, people and identifiers are fictional; every document is marked SPECIMEN. Details: [test-data/README.md](test-data/README.md).
+All 10 sample vendors are in the live app ("Sample vendors" panel). Companies, people and identifiers are fictional; every document is marked SPECIMEN. Details: [test-data/README.md](test-data/README.md).
 
 | # | Scenario | What makes it hard | Outcome | Shows |
 |---|---|---|---|---|
@@ -307,6 +309,7 @@ All 9 sample vendors are in the live app ("Sample vendors" panel). Companies, pe
 | V07 | GSTIN passes its check digit but belongs to another company | Format checks alone miss it | Rejected on 4 signals | Cross-referencing |
 | V08 | Cheque missing; vendor goes quiet | No reply | Reminder day 2, escalation day 5, closed day 10 | Follow-up agent |
 | V09 | UK vendor enters its Indian subsidiary's GSTIN | Valid GSTIN, wrong country | Pending: vendor → VAT number → Approved (2 of 8 re-run) | Country-aware tax IDs |
+| V10 | Payroll vendor with data access; ISO 27001 certificate expired | Everything else is clean | Pending: vendor → renewed certificate → Pending: review (sign-off) | Compliance evidence, expiry |
 
 ---
 
@@ -318,14 +321,14 @@ All 9 sample vendors are in the live app ("Sample vendors" panel). Companies, pe
 |---|---|---|
 | 23 / 23 (100%) | 75 / 76 (98.7%) | 6.5 s |
 
-**Automated tests: 48** (`npm test`).
+**Automated tests: 53** (`npm test`).
 
 | Suite | Tests | Covers |
 |---|---|---|
 | `ids.test.ts` | 12 | GSTIN check digit on published samples, PAN, IFSC registry, UK VAT, IBAN, US routing, name matching |
-| `scenarios.test.ts` | 21 | Every sample's decision, fix loop, incremental re-checks, teaching, guardrails, tiers, AI failures |
+| `scenarios.test.ts` | 25 | Every sample's decision, fix loop, incremental re-checks, teaching, guardrails, tiers, AI failures |
 | `teach.test.ts` | 6 | Rule building, guardrails, reading the reviewer's note |
-| `ai-readings.test.ts` | 9 | Every sample decided correctly from the **real** recorded AI readings |
+| `ai-readings.test.ts` | 10 | Every sample decided correctly from the **real** recorded AI readings |
 
 **Two real bugs found by testing, and fixed:**
 
@@ -407,7 +410,7 @@ gantt
     Forgery detection                :v4, after v1, 21d
 ```
 
-**Pilot success metrics:** share of vendors handled with no person involved; days from invite to approval; chasing emails still sent by people; fraud flags confirmed as real.
+**Pilot success metrics** (all on the dashboard, each with its formula): onboarding cycle time (approval date − request date); first-pass completeness (first submissions with nothing for the vendor to fix ÷ submissions); duplicate / identity-overlap rate (submissions matching an existing vendor's GSTIN, PAN or bank account ÷ submissions); share handled with no person involved; chasing emails still sent by people; fraud flags confirmed as real.
 
 ---
 
@@ -428,13 +431,13 @@ gantt
 npm install
 echo "GEMINI_API_KEY=your-key" > .env.local
 npm run dev        # http://localhost:3000
-npm test           # 48 tests
+npm test           # 53 tests
 ```
 
 **Two-minute demo** (each visitor gets a private sandbox; "Reset demo" starts over):
 
 1. **Cases → Ganga Office Supplies → Submit.** Watch the documents being read and the checks run; it's returned for a wrong document. Open the fix page, attach the correct file, and only 4 of 16 checks re-run.
-2. **Cases → Run all 9 at once**, then **Dashboard.**
+2. **Cases → Run all 10 at once**, then **Dashboard.**
 3. **Reviewer → Review queue → Sharma Trading Co.** Approve with a reason, add the suggested rule, and Gupta Trading Company is approved on its own.
 4. **Apex Facility Services → "Try to teach an exception anyway"** is refused.
 5. **Lotus Print House → "+3 days" three times:** reminder, escalation, closed.
@@ -450,7 +453,7 @@ lib/client/          browser sandbox store, submission pipeline, follow-up agent
 app/                 pages (cases, invite, vendor form, case file, review, dashboard, messages, rules)
 app/api/             read, run, draft, teach, scenarios, file
 components/          shared UI, reviewer panel
-test-data/           9 sample vendors, documents, expected outcomes, recorded AI readings
+test-data/           10 sample vendors, documents, expected outcomes, recorded AI readings
 data/                vendor master; IFSC registry (Razorpay, MIT licence)
 scripts/             test-data generator, AI accuracy evaluation
 ```

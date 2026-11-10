@@ -20,7 +20,7 @@ export default function InvitePage() {
   const spend = Number(f.spend.replace(/[^0-9]/g, "")) || 0;
   const invite = { buyer: f.buyer, category: f.category, annual_spend_inr: spend, data_access: f.data_access };
   const { tier, why } = computeTier(invite, s.policy);
-  const docs = s.policy.required_docs[tier];
+  const docs = [...s.policy.required_docs[tier], ...(f.data_access ? (["security_certificate"] as const) : [])];
   const ok = f.vendor_name.trim() && /\S+@\S+\.\S+/.test(f.vendor_email);
 
   const send = () => {

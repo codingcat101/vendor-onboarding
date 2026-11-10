@@ -1,0 +1,16 @@
+{
+  "slot": "gst_certificate",
+  "file": "docs/gst_certificate.pdf",
+  "doc_type": "gst_certificate",
+  "fields": {
+    "gstin": "36AAFCL3391R1ZS",
+    "legal_name": "LUMEN PAYROLL SERVICES PRIVATE LIMITED",
+    "state": "Telangana",
+    "trade_name": "LUMEN PAYROLL"
+  },
+  "confidence": 0.95,
+  "source": "ai",
+  "notes": "Fictional specimen document generated for testing.",
+  "ms": 9256,
+  "model": "gemini-3.6-flash"
+}

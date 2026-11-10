@@ -1,0 +1,17 @@
+{
+  "slot": "security_certificate",
+  "file": "docs/security_certificate.pdf",
+  "doc_type": "security_certificate",
+  "fields": {
+    "certificate_number": "SCS-ISMS-23-0442",
+    "holder": "LUMEN PAYROLL SERVICES PRIVATE LIMITED",
+    "issuer": "SPECIMEN CERTIFICATION SERVICES (fictional)",
+    "standard": "ISO/IEC 27001:2022",
+    "valid_until": "2026-09-30"
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "gemini-3.6-flash was busy, read by gemini-3-flash-preview. This is a fictional specimen document generated for software testing.",
+  "ms": 5572,
+  "model": "gemini-3-flash-preview"
+}

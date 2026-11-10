@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { runAllSamples } from "@/lib/client/seed";
+import { OWNER_COLOR, nextStep } from "@/lib/client/owner";
 import { caseName, caseStatus, useStore } from "@/lib/client/store";
 import { SAMPLE_BLURB, useScenarios } from "@/lib/client/scenarios";
 import { Section, StatusBadge, TierTag, fmtTime } from "@/components/ui";
@@ -49,7 +50,8 @@ export default function CasesPage() {
                   <th className="px-4 py-2 font-medium">Vendor</th>
                   <th className="hidden px-2 py-2 font-medium sm:table-cell">Tier</th>
                   <th className="px-2 py-2 font-medium">Status</th>
-                  <th className="hidden px-4 py-2 font-medium text-right sm:table-cell">Last activity</th>
+                  <th className="hidden px-2 py-2 font-medium md:table-cell">Next step</th>
+                  <th className="hidden px-4 py-2 font-medium text-right xl:table-cell">Last activity</th>
                 </tr>
               </thead>
               <tbody>
@@ -69,7 +71,18 @@ export default function CasesPage() {
                     <td className="px-2 py-2.5">
                       <StatusBadge status={caseStatus(c)} />
                     </td>
-                    <td className="hidden px-4 py-2.5 text-right text-[13px] text-ink-2 sm:table-cell">{fmtTime(c.events.at(-1)!.at)}</td>
+                    <td className="hidden px-2 py-2.5 text-[13px] md:table-cell">
+                      {(() => {
+                        const n = nextStep(c, s.now());
+                        return (
+                          <>
+                            <span className="font-semibold" style={{ color: OWNER_COLOR[n.owner] }}>{n.owner}</span>
+                            <span className="block text-ink-2">{n.action}</span>
+                          </>
+                        );
+                      })()}
+                    </td>
+                    <td className="hidden px-4 py-2.5 text-right text-[13px] text-ink-2 xl:table-cell">{fmtTime(c.events.at(-1)!.at)}</td>
                   </tr>
                 ))}
               </tbody>

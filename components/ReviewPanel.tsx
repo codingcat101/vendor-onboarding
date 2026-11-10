@@ -51,7 +51,7 @@ export function ReviewPanel({ c, run }: { c: Case; run: CaseRun }) {
       const prev = o.runs.at(-1)!;
       const res = await fetch("/api/run", {
         method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ sub: prev.inputs.sub, invite: o.invite, docs: prev.inputs.docs, policy: candidate, extra_master: s.approvedVendors().filter((v) => v.vendor_id !== o.id) }),
+        body: JSON.stringify({ sub: prev.inputs.sub, invite: o.invite, docs: prev.inputs.docs, policy: candidate, as_of: s.now().toISOString(), extra_master: s.approvedVendors().filter((v) => v.vendor_id !== o.id) }),
       });
       const j = await res.json();
       if (j.decision.status !== "PENDING_INTERNAL") out.push({ id: o.id, name: caseName(o), to: j.decision.status });

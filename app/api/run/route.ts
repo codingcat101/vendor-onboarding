@@ -12,6 +12,7 @@ interface Body {
   /** Vendors approved in this visitor's sandbox, so later duplicates are caught. */
   extra_master?: ExistingVendor[];
   previous?: { run: RunResult; sub: Submission; docs: Partial<Record<DocSlot, ExtractedDoc>> };
+  as_of?: string;
 }
 
 // Runs every check and returns the decision. Pure: no state is stored on the server.
@@ -23,6 +24,6 @@ export async function POST(req: NextRequest) {
     changed = diffInputs({ sub: b.previous.sub, docs: b.previous.docs }, { sub: b.sub, docs: b.docs });
     if (b.previous.run.policy_version !== b.policy.version) changed.push("policy");
   }
-  const result = runOnboarding({ sub: b.sub, invite: b.invite, docs: b.docs, master, policy: b.policy, previous: b.previous?.run, changed });
+  const result = runOnboarding({ sub: b.sub, invite: b.invite, docs: b.docs, master, policy: b.policy, previous: b.previous?.run, changed, asOf: b.as_of });
   return NextResponse.json({ ...result, changed });
 }

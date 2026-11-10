@@ -81,7 +81,7 @@ export async function processSubmission(opts: {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      sub, invite: c.invite, docs, policy, extra_master: extraMaster.filter((v) => v.vendor_id !== c.id),
+      sub, invite: c.invite, docs, policy, extra_master: extraMaster.filter((v) => v.vendor_id !== c.id), as_of: at,
       previous: prev ? { run: prev, sub: prev.inputs.sub, docs: prev.inputs.docs } : undefined,
     }),
   });
@@ -98,7 +98,7 @@ export async function rerunWithPolicy(c: Case, policy: Policy, extraMaster: Exis
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      sub: prev.inputs.sub, invite: c.invite, docs: prev.inputs.docs, policy, extra_master: extraMaster.filter((v) => v.vendor_id !== c.id),
+      sub: prev.inputs.sub, invite: c.invite, docs: prev.inputs.docs, policy, extra_master: extraMaster.filter((v) => v.vendor_id !== c.id), as_of: at,
       previous: { run: prev, sub: prev.inputs.sub, docs: prev.inputs.docs },
     }),
   });

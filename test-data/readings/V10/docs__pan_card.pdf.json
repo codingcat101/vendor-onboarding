@@ -1,0 +1,14 @@
+{
+  "slot": "pan_card",
+  "file": "docs/pan_card.pdf",
+  "doc_type": "pan_card",
+  "fields": {
+    "name": "LUMEN PAYROLL SERVICES PRIVATE LIMITED",
+    "pan": "AAFCL3391R"
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "Specimen PAN card.",
+  "ms": 5198,
+  "model": "gemini-3.6-flash"
+}

@@ -1,0 +1,17 @@
+{
+  "slot": "security_certificate",
+  "file": "docs/security_certificate.pdf",
+  "doc_type": "security_certificate",
+  "fields": {
+    "certificate_number": "SCS-ISMS-24-0815",
+    "holder": "NIMBUS CLOUD ANALYTICS PRIVATE LIMITED",
+    "issuer": "SPECIMEN CERTIFICATION SERVICES (fictional)",
+    "standard": "ISO/IEC 27001:2022",
+    "valid_until": "2028-03-31"
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "Fictional specimen ISO/IEC 27001:2022 certificate.",
+  "ms": 7931,
+  "model": "gemini-3.6-flash"
+}

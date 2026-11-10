@@ -11,7 +11,9 @@ export type Severity =
 
 export type Outcome = "pass" | "fail" | "warn" | "skip";
 
-export type DocSlot = "gst_certificate" | "pan_card" | "cancelled_cheque" | "incorporation_certificate";
+export type DocSlot = "gst_certificate" | "pan_card" | "cancelled_cheque" | "incorporation_certificate" | "security_certificate";
+
+export const ALL_DOC_SLOTS: DocSlot[] = ["gst_certificate", "pan_card", "cancelled_cheque", "incorporation_certificate", "security_certificate"];
 
 export const COUNTRY_NAME: Record<string, string> = { IN: "India", US: "the United States", GB: "the United Kingdom" };
 
@@ -20,6 +22,7 @@ export const DOC_LABEL: Record<DocSlot, string> = {
   pan_card: "PAN card",
   cancelled_cheque: "Cancelled cheque",
   incorporation_certificate: "Certificate of incorporation",
+  security_certificate: "Security certificate (ISO 27001 or SOC 2)",
 };
 
 /** What to call a document slot for a vendor in this country (cancelled cheques are an Indian convention). */

@@ -122,7 +122,8 @@ S["V02"] = dict(
                  "NIMBUS CLOUD ANALYTICS PRIVATE LIMITED",
                  cin="U72900MH2019PTC324517"),
     docs={"gst_certificate": "gst", "pan_card": "pan", "cancelled_cheque": "cheque",
-          "incorporation_certificate": "coi"},
+          "incorporation_certificate": "coi", "security_certificate": "seccert"},
+    cert=dict(number="SCS-ISMS-24-0815", issued="2025-04-01", valid_until="2028-03-31"),
     expected=dict(tier="STRATEGIC", status="PENDING_INTERNAL", reasons=["STRATEGIC_SIGNOFF_REQUIRED"]),
 )
 
@@ -295,6 +296,26 @@ S["V09"] = dict(
     docs={"cancelled_cheque": "bankletter"},
     fix_fields={"tax_id": uk_vat()},
     expected=dict(tier="LOW", status="PENDING_VENDOR", reasons=["TAX_ID_FORMAT"], after_fix=dict(status="APPROVED")),
+)
+
+rng10 = random.Random(1010)
+pan10 = "AAFCL" + "3391" + "R"
+S["V10"] = dict(
+    title="Edge 6 — Payroll vendor with data access: ISO 27001 certificate has expired",
+    invite=dict(buyer="Priya Nair (Procurement)", category="Payroll & HR services",
+                annual_spend_inr=1_800_000, data_access=True),
+    form=company("Lumen Payroll Services Private Limited", "Lumen Payroll", "Private Limited Company", "36", "Hyderabad",
+                 "Plot 17, Cyber Towers Road, HITEC City", "500081", pan10, make_gstin("36", pan10), "Sravani Reddy",
+                 "compliance@lumenpayroll.example", "+91 90000 41822", "HDFC", "HDFC0000240",
+                 "5" + "".join(str(rng10.randint(0, 9)) for _ in range(13)), "LUMEN PAYROLL SERVICES PRIVATE LIMITED",
+                 cin="U74999TG2018PTC127734"),
+    docs={"gst_certificate": "gst", "pan_card": "pan", "cancelled_cheque": "cheque",
+          "incorporation_certificate": "coi", "security_certificate": "seccert"},
+    cert=dict(number="SCS-ISMS-23-0442", issued="2023-10-01", valid_until="2026-09-30"),
+    fix={"security_certificate": "seccert@renewed"},
+    fix_cert=dict(number="SCS-ISMS-26-0911", issued="2026-10-01", valid_until="2029-09-30"),
+    expected=dict(tier="STRATEGIC", status="PENDING_VENDOR", reasons=["SECURITY_CERT_EXPIRED"],
+                  after_fix=dict(status="PENDING_INTERNAL", reasons=["STRATEGIC_SIGNOFF_REQUIRED"])),
 )
 
 # ----------------------------------------------------------------------------
@@ -512,7 +533,45 @@ def render_bankletter(c, f):
     watermark(c)
 
 
-RENDER = {"bankletter": render_bankletter, "gst": render_gst, "pan": render_pan, "cheque": render_cheque, "coi": render_coi,
+CERT = {}  # set per document before rendering
+
+
+def dmy(iso):
+    y, m, d = iso.split("-")
+    return f"{d}/{m}/{y}"
+
+
+def render_seccert(c, f):
+    cert = CERT
+    c.setStrokeColor(colors.Color(0.55, 0.6, 0.75))
+    c.setLineWidth(2)
+    c.rect(15 * mm, H - 200 * mm, 180 * mm, 180 * mm)
+    c.setFont("Helvetica-Bold", 13)
+    c.drawCentredString(W / 2, H - 34 * mm, "SPECIMEN CERTIFICATION SERVICES (fictional)")
+    c.setFont("Helvetica-Bold", 20)
+    c.drawCentredString(W / 2, H - 52 * mm, "CERTIFICATE OF REGISTRATION")
+    c.setFont("Helvetica", 11)
+    c.drawCentredString(W / 2, H - 64 * mm, "This is to certify that the Information Security Management System of")
+    c.setFont("Helvetica-Bold", 14)
+    c.drawCentredString(W / 2, H - 76 * mm, f["legal_name"].upper())
+    c.setFont("Helvetica", 10)
+    a = f["address"]
+    c.drawCentredString(W / 2, H - 83 * mm, f"{a['line1']}, {a['city']}, {a['state']} - {a['pincode']}")
+    c.setFont("Helvetica", 11)
+    c.drawCentredString(W / 2, H - 96 * mm, "has been assessed and found to conform to the requirements of")
+    c.setFont("Helvetica-Bold", 16)
+    c.drawCentredString(W / 2, H - 108 * mm, "ISO/IEC 27001:2022")
+    c.setFont("Helvetica", 10)
+    c.drawCentredString(W / 2, H - 118 * mm, "Scope: provision of software, data processing and support services")
+    rows = [("Certificate number", cert["number"]), ("Initial registration", dmy(cert["issued"])),
+            ("Valid until", dmy(cert["valid_until"]))]
+    kv_table(c, 40 * mm, H - 128 * mm, rows, label_w=50 * mm, width=130 * mm)
+    c.setFont("Helvetica", 9)
+    c.drawString(40 * mm, H - 170 * mm, "Specimen Lead Auditor (fictional)  ·  Accreditation: none (test document)")
+    watermark(c)
+
+
+RENDER = {"seccert": render_seccert, "bankletter": render_bankletter, "gst": render_gst, "pan": render_pan, "cheque": render_cheque, "coi": render_coi,
           "invoice": render_invoice}
 
 
@@ -587,6 +646,9 @@ def ground_truth(slot, spec, form):
                     pan=form["pan"])
     if kind == "invoice":
         return dict(doc_type="invoice", gstin=form["gstin"])
+    if kind == "seccert":
+        return dict(doc_type="security_certificate", holder=form["legal_name"].upper(), standard="ISO/IEC 27001:2022",
+                    certificate_number=CERT["number"], valid_until=CERT["valid_until"])
     if kind == "bankletter":
         return dict(doc_type="bank_letter", account_number=b["account_number"], account_holder=b["account_holder"])
     raise ValueError(kind)
@@ -606,12 +668,14 @@ def main():
         form = s["form"]
         uploaded, truth = {}, {}
         for slot, spec in s["docs"].items():
+            CERT.clear(); CERT.update(s.get("cert", {}))
             name = write_doc(folder / "docs", slot, spec, form)
             uploaded[slot] = f"docs/{name}"
             truth[f"docs/{name}"] = ground_truth(slot, spec, form)
         fixes = {}
         for slot, spec in s.get("fix", {}).items():
             (folder / "fix").mkdir(exist_ok=True)
+            CERT.clear(); CERT.update(s.get("fix_cert", s.get("cert", {})))
             name = write_doc(folder / "fix", slot, spec, form)
             fixes[slot] = f"fix/{name}"
             truth[f"fix/{name}"] = ground_truth(slot, spec, form)

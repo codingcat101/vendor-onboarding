@@ -10,6 +10,8 @@ import { Case, CaseRun, Reading, caseName, caseStatus, useStore } from "@/lib/cl
 import { CheckResult, DOC_LABEL, DocSlot, STAGES, Stage, docLabel } from "@/lib/engine/types";
 import { STATUS_META, Section, Stamp, TierTag, fmtTime, inr } from "@/components/ui";
 import { GuardrailPanel, ReviewPanel } from "@/components/ReviewPanel";
+import { ReviewPacket } from "@/components/ReviewPacket";
+import { OWNER_COLOR, nextStep } from "@/lib/client/owner";
 
 type LiveDoc = { state: "start" | "reused" | "done"; reading?: Reading };
 
@@ -98,6 +100,19 @@ function CasePage() {
             <span>Invited by {c.invite.buyer}</span>
             <TierTag tier={c.tier} why={c.tier_why} />
           </p>
+          {!live && (() => {
+            const n = nextStep(c, s.now());
+            return (
+              <p className="mt-3 inline-flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-rule bg-sheet px-3 py-1.5 text-[14px]">
+                <span className="text-ink-3">Open items</span>
+                <b className="tabular-nums">{n.open}</b>
+                <span className="h-4 w-px bg-rule" aria-hidden />
+                <span className="text-ink-3">Next</span>
+                <b style={{ color: OWNER_COLOR[n.owner] }}>{n.owner === n.who ? n.owner : `${n.owner} · ${n.who}`}</b>
+                <span className="text-ink-2">{n.action}</span>
+              </p>
+            );
+          })()}
         </div>
         <div className="min-h-[64px] pr-2 pt-2">
           {showStamp && (
@@ -142,6 +157,7 @@ function CasePage() {
           <div className="grid gap-6">
             <ChecksPanel run={run} revealed={revealed} phase={live?.phase} />
             {run && revealed >= STAGES.length && <NextStep c={c} run={run} />}
+            {run && revealed >= STAGES.length && <ReviewPacket c={c} run={run} />}
             <ActivityPanel c={c} />
           </div>
         </div>
