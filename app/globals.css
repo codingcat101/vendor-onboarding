@@ -1,29 +1,30 @@
 @import "tailwindcss";
 
-/* Palette: forest and teal field, electric blue, mauve-salmon and magenta accents, white cards. */
+/* Soft accent gradients: mint, periwinkle, blush, peach over near-white; white cards; strong ink for text. */
 :root {
-  --paper: #f2f6f4;
+  --paper: #f8f9fc;
   --sheet: #ffffff;
-  --ink: #0f1512;
-  --ink-2: #45524d;
-  --ink-3: #66726d;
-  --rule: #dbe4e0;
-  --rule-strong: #b6c5bf;
-  --tint: #e7efeb;
-  --forest: #06362a;
-  --teal: #1e7266;
-  --blue: #125ade;
-  --magenta: #e534a7;
-  --mauve: #c48a9e;
+  --ink: #141826;
+  --ink-2: #4a5065;
+  --ink-3: #6b7085;
+  --rule: #e4e6ef;
+  --rule-strong: #c9cddb;
+  --tint: #f1f2f8;
+  --mint: #b8ead8;
+  --peri: #c6d4ff;
+  --blush: #f8c8e2;
+  --peach: #ffe0cc;
+  --grad: linear-gradient(120deg, #9fe0c9 0%, #a9bcff 50%, #f5aed4 100%);
+  --grad-soft: linear-gradient(120deg, #e8f7f1 0%, #ebefff 50%, #fcebf4 100%);
 
-  --approve: #1e7266;
-  --approve-bg: #e1f0eb;
-  --reject: #c01d84;
-  --reject-bg: #fce8f4;
-  --review: #125ade;
-  --review-bg: #e6eefd;
-  --wait: #a1532c;
-  --wait-bg: #fbece3;
+  --approve: #1c7a61;
+  --approve-bg: #e4f6ef;
+  --reject: #c0267f;
+  --reject-bg: #fdeaf4;
+  --review: #3a5bd9;
+  --review-bg: #ebf0ff;
+  --wait: #b0582a;
+  --wait-bg: #fff0e6;
 
   color-scheme: light;
 }
@@ -53,6 +54,16 @@ html,
 body {
   background: var(--paper);
   color: var(--ink);
+}
+
+body {
+  background:
+    radial-gradient(900px 520px at 0% 0%, rgba(184, 234, 216, 0.75), transparent 70%),
+    radial-gradient(900px 560px at 100% 0%, rgba(198, 212, 255, 0.8), transparent 70%),
+    radial-gradient(1000px 700px at 70% 100%, rgba(248, 200, 226, 0.55), transparent 70%),
+    radial-gradient(700px 500px at 0% 100%, rgba(255, 224, 204, 0.5), transparent 70%),
+    var(--paper);
+  background-attachment: fixed;
 }
 
 body {
@@ -113,7 +124,12 @@ body {
   white-space: nowrap;
 }
 .btn:hover {
-  background: var(--forest);
+  background: #2a3150;
+}
+
+/* The brand gradient, used sparingly: logo badge, tile accents. */
+.grad-bar {
+  background: var(--grad);
 }
 .btn:disabled {
   opacity: 0.5;

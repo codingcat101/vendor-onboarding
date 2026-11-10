@@ -23,6 +23,19 @@ const REASON_LABEL: Record<string, string> = {
   IFSC_INVALID: "IFSC not a real branch",
   DOC_BANK_MISMATCH: "Cheque ≠ bank details",
   FIELD_MISSING: "Form incomplete",
+  TAX_ID_FORMAT: "Tax ID wrong for country",
+  IBAN_INVALID: "IBAN invalid",
+  ROUTING_INVALID: "Routing number invalid",
+  ACCOUNT_INVALID: "Account number invalid",
+  CIN_INVALID: "CIN invalid",
+  IFSC_BANK_MISMATCH: "IFSC ≠ bank name",
+  DOC_NOT_READ_AI: "AI couldn't read a document",
+  PAN_TYPE_MISMATCH: "PAN type ≠ business type",
+  DOC_GSTIN_MISMATCH: "Certificate GSTIN ≠ form",
+  DOC_PAN_MISMATCH: "PAN card ≠ form",
+  DOC_COI_MISMATCH: "Incorporation cert. ≠ form",
+  DUPLICATE_VENDOR: "Already a vendor",
+  PAN_BELONGS_TO_OTHER_VENDOR: "PAN on another vendor",
 };
 const SEV: Record<string, { label: string; color: string }> = {
   fraud: { label: "integrity", color: "var(--reject)" },
@@ -53,7 +66,8 @@ function approvedAt(c: Case) {
 
 function Tile({ value, label, note }: { value: string; label: string; note?: string }) {
   return (
-    <div className="min-w-0 rounded-xl border border-rule bg-sheet px-4 py-3">
+    <div className="relative min-w-0 overflow-hidden rounded-xl border border-rule bg-sheet px-4 pb-3 pt-4">
+      <span className="grad-bar absolute inset-x-0 top-0 h-1" aria-hidden />
       <div className="text-[30px] font-extrabold leading-none tracking-tight">{value}</div>
       <div className="mt-1.5 text-[14px] font-semibold">{label}</div>
       {note && <div className="text-[13px] text-ink-2">{note}</div>}
