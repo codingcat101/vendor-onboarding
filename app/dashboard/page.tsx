@@ -53,7 +53,7 @@ function approvedAt(c: Case) {
 
 function Tile({ value, label, note }: { value: string; label: string; note?: string }) {
   return (
-    <div className="min-w-0 rounded-md border border-rule bg-sheet px-4 py-3">
+    <div className="min-w-0 rounded-xl border border-rule bg-sheet px-4 py-3">
       <div className="text-[30px] font-extrabold leading-none tracking-tight">{value}</div>
       <div className="mt-1.5 text-[14px] font-semibold">{label}</div>
       {note && <div className="text-[13px] text-ink-2">{note}</div>}

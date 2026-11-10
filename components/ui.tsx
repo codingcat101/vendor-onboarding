@@ -53,7 +53,7 @@ export function fmtTime(iso: string) {
 
 export function Section({ title, aside, children, className = "" }: { title: string; aside?: React.ReactNode; children: React.ReactNode; className?: string }) {
   return (
-    <section className={`min-w-0 rounded-md border border-rule bg-sheet ${className}`}>
+    <section className={`min-w-0 rounded-xl border border-rule bg-sheet ${className}`}>
       <header className="flex items-center justify-between gap-3 border-b border-rule px-4 py-2.5">
         <h2 className="text-[15px] font-bold">{title}</h2>
         {aside}

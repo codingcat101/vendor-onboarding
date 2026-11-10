@@ -36,23 +36,23 @@ export default function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-rule bg-sheet">
-        <div className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
+      <header className="bg-[var(--forest)] bg-[url('/texture.png')] bg-cover bg-center px-4 py-5 [image-rendering:pixelated]">
+        <div className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-x-6 gap-y-2 rounded-2xl bg-sheet px-5 py-3 shadow-[0_8px_30px_rgba(6,30,18,0.35)] [image-rendering:auto]">
           <Link href="/" className="flex items-center gap-2 font-extrabold tracking-tight text-[17px]">
             <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden>
               <rect x="2" y="3" width="15" height="17" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
               <path d="M5.5 8h8M5.5 11.5h8M5.5 15h4.5" stroke="currentColor" strokeWidth="1.6" />
-              <circle cx="16.5" cy="16" r="4.2" fill="var(--approve)" />
+              <circle cx="16.5" cy="16" r="4.2" fill="var(--magenta)" />
               <path d="M14.6 16l1.3 1.3 2.3-2.5" stroke="#fff" strokeWidth="1.5" fill="none" />
             </svg>
             Vendor Onboarding
           </Link>
-          <nav className="flex gap-1" aria-label="Main">
+          <nav className="-mx-1 order-last flex w-full gap-1 overflow-x-auto md:order-none md:w-auto" aria-label="Main">
             {NAV.filter((n) => n.roles.includes(s.role)).map((n) => (
               <Link
                 key={n.href}
                 href={n.href}
-                className={`rounded px-2.5 py-1 text-[14px] ${path === n.href ? "bg-tint font-semibold" : "text-ink-2 hover:text-ink"}`}
+                className={`shrink-0 whitespace-nowrap rounded px-2.5 py-1 text-[14px] ${path === n.href ? "bg-tint font-semibold" : "text-ink-2 hover:text-ink"}`}
               >
                 {n.label}
                 {n.href === "/review" && queue > 0 && (

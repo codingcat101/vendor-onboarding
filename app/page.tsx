@@ -47,7 +47,7 @@ export default function CasesPage() {
               <thead className="text-[13px] text-ink-3">
                 <tr className="border-b border-rule">
                   <th className="px-4 py-2 font-medium">Vendor</th>
-                  <th className="px-2 py-2 font-medium">Tier</th>
+                  <th className="hidden px-2 py-2 font-medium sm:table-cell">Tier</th>
                   <th className="px-2 py-2 font-medium">Status</th>
                   <th className="hidden px-4 py-2 font-medium text-right sm:table-cell">Last activity</th>
                 </tr>
@@ -63,7 +63,7 @@ export default function CasesPage() {
                         <span className="id">{c.id}</span> · {c.invite.category}
                       </div>
                     </td>
-                    <td className="px-2 py-2.5">
+                    <td className="hidden px-2 py-2.5 sm:table-cell">
                       <TierTag tier={c.tier} why={c.tier_why} />
                     </td>
                     <td className="px-2 py-2.5">
