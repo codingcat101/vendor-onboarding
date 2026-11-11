@@ -19,6 +19,7 @@ const NAV: { href: string; label: string; roles: Role[] }[] = [
   { href: "/dashboard", label: "Dashboard", roles: ["buyer", "reviewer"] },
   { href: "/outbox", label: "Messages", roles: ["buyer", "reviewer"] },
   { href: "/policy", label: "Rules", roles: ["reviewer", "buyer"] },
+  { href: "/governance", label: "Governance", roles: ["reviewer", "buyer"] },
 ];
 
 export default function Shell({ children }: { children: React.ReactNode }) {
