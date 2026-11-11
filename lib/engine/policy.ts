@@ -54,7 +54,11 @@ export function requiredDocs(tier: Tier, sub: Submission, policy: Policy, invite
   const docs = [...policy.required_docs[tier]];
   // Vendors that will touch our data or systems must show security evidence, whatever the spend.
   if (invite?.data_access) docs.push("security_certificate");
-  if (sub.country !== "IN") return docs.filter((d) => d !== "gst_certificate" && d !== "pan_card");
+  if (sub.country !== "IN") {
+    const abroad = docs.filter((d) => d !== "gst_certificate" && d !== "pan_card");
+    // US vendors certify their legal name and taxpayer ID on IRS Form W-9 (needed for 1099 reporting).
+    return sub.country === "US" ? ["w9_form", ...abroad] : abroad;
+  }
   // Only companies have a certificate of incorporation.
   const isCompany = /company|limited liability partnership|llp/i.test(sub.constitution);
   return isCompany ? docs : docs.filter((d) => d !== "incorporation_certificate");
@@ -74,6 +78,9 @@ export const HARD_CODES = new Set([
   "PAN_BELONGS_TO_OTHER_VENDOR",
   "DOC_NAME_MISMATCH",
   "BANK_NAME_MISMATCH",
+  // Not fraud by itself (most hits are false positives), but no rule may ever clear it:
+  // a named person decides every possible sanctions match and records why.
+  "POSSIBLE_WATCHLIST_MATCH",
 ]);
 
 /** Plain description of each fraud problem (what went wrong, not what the check looks for). */
@@ -84,6 +91,7 @@ export const HARD_LABEL: Record<string, string> = {
   PAN_BELONGS_TO_OTHER_VENDOR: "PAN is on file for a different vendor",
   DOC_NAME_MISMATCH: "a document is in a clearly different name",
   BANK_NAME_MISMATCH: "bank account holder is a clearly different name",
+  POSSIBLE_WATCHLIST_MATCH: "a name is close to an entry on the sanctions watchlist",
 };
 
 /** The only rule types a reviewer can teach. Anything else is refused. */

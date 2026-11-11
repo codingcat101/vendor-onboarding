@@ -1,16 +1,16 @@
 {
-  "documents": 23,
+  "documents": 29,
   "doc_type_accuracy": 1,
-  "field_accuracy": 0.9868421052631579,
-  "fields_total": 76,
-  "fields_correct": 75,
-  "avg_seconds": 6.528739130434783,
+  "field_accuracy": 0.9896907216494846,
+  "fields_total": 97,
+  "fields_correct": 96,
+  "avg_seconds": 7.570724137931035,
   "models_tried": [
     "gemini-3.6-flash",
     "gemini-3-flash-preview",
     "gemini-3.1-flash-lite"
   ],
-  "run_at": "2026-11-09T17:43:21.303Z",
+  "run_at": "2026-11-11T06:28:00.466Z",
   "rows": [
     {
       "model": "gemini-3.6-flash",
@@ -266,6 +266,72 @@
       "misses": [],
       "conf": 1,
       "ms": 10314
+    },
+    {
+      "model": "gemini-3.6-flash",
+      "doc": "V11/docs/w9_form.pdf",
+      "type_ok": true,
+      "got_type": "w9_form",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 0.95,
+      "ms": 14314
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "doc": "V11/docs/cancelled_cheque.pdf",
+      "type_ok": true,
+      "got_type": "bank_letter",
+      "fields": 3,
+      "correct": 3,
+      "misses": [],
+      "conf": 1,
+      "ms": 8841
+    },
+    {
+      "model": "gemini-3.6-flash",
+      "doc": "V12/docs/w9_form.pdf",
+      "type_ok": true,
+      "got_type": "w9_form",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 0.99,
+      "ms": 21531
+    },
+    {
+      "model": "gemini-3.6-flash",
+      "doc": "V12/docs/cancelled_cheque.pdf",
+      "type_ok": true,
+      "got_type": "bank_letter",
+      "fields": 3,
+      "correct": 3,
+      "misses": [],
+      "conf": 1,
+      "ms": 4522
+    },
+    {
+      "model": "gemini-3.6-flash",
+      "doc": "V13/docs/w9_form.pdf",
+      "type_ok": true,
+      "got_type": "w9_form",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 0.98,
+      "ms": 9462
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "doc": "V13/docs/cancelled_cheque.pdf",
+      "type_ok": true,
+      "got_type": "bank_letter",
+      "fields": 3,
+      "correct": 3,
+      "misses": [],
+      "conf": 1,
+      "ms": 10720
     }
   ]
 }

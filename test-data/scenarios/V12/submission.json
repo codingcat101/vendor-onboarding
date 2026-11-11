@@ -1,0 +1,29 @@
+{
+  "scenario_id": "V12",
+  "legal_name": "Harborline Logistics Inc.",
+  "trade_name": "Harborline",
+  "constitution": "Corporation",
+  "country": "US",
+  "address": {
+    "line1": "40 East Bay Street",
+    "city": "Savannah",
+    "state": "Georgia",
+    "pincode": "31401"
+  },
+  "tax_id": "469032477",
+  "contact": {
+    "name": "Daniel Reyes",
+    "email": "billing@harborline.example",
+    "phone": "+1 912 555 0177"
+  },
+  "bank": {
+    "account_holder": "HARBORLINE LOGISTICS INC",
+    "account_number": "45432897561",
+    "ifsc": "047920745",
+    "bank_name": "Lakeshore Specimen Bank (fictional)"
+  },
+  "documents": {
+    "w9_form": "docs/w9_form.pdf",
+    "cancelled_cheque": "docs/cancelled_cheque.pdf"
+  }
+}

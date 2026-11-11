@@ -10,6 +10,7 @@ const ABBREVIATIONS: [RegExp, string][] = [
   [/\bCO\b/g, "COMPANY"],
   [/\bCORP\b/g, "CORPORATION"],
   [/\bINC\b/g, "INCORPORATED"],
+  [/\bL\.?L\.?C\b\.?/g, "LLC"],
   [/\bMFG\b/g, "MANUFACTURING"],
   [/\bENGG\b/g, "ENGINEERING"],
   [/\bINTL\b/g, "INTERNATIONAL"],
@@ -18,7 +19,7 @@ const ABBREVIATIONS: [RegExp, string][] = [
 ];
 
 /** Words that say what kind of entity it is, not who it is. Ignored for similarity scoring. */
-const GENERIC = new Set(["PRIVATE", "LIMITED", "LLP", "COMPANY", "THE", "AND", "INCORPORATED", "CORPORATION"]);
+const GENERIC = new Set(["PRIVATE", "LIMITED", "LLP", "LLC", "COMPANY", "THE", "AND", "INCORPORATED", "CORPORATION"]);
 
 export interface Equivalence {
   /** Phrases treated as the same, e.g. ["TRADERS", "TRADING COMPANY"]. Already normalised. */

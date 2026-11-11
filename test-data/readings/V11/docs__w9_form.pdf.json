@@ -1,0 +1,17 @@
+{
+  "slot": "w9_form",
+  "file": "docs/w9_form.pdf",
+  "doc_type": "w9_form",
+  "fields": {
+    "business_name": "Brightwater Supply",
+    "entity_type": "LLC (S corporation)",
+    "legal_name": "Brightwater Industrial Supply LLC",
+    "signature_date": "2026-10-21",
+    "tin": "31-4315134"
+  },
+  "confidence": 0.95,
+  "source": "ai",
+  "notes": "Specimen Form W-9 document.",
+  "ms": 14314,
+  "model": "gemini-3.6-flash"
+}

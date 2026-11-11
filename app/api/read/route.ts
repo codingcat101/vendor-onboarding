@@ -5,7 +5,7 @@ import { loadScenarios, scenarioFile, truthReading } from "@/lib/engine/fixtures
 import type { DocSlot } from "@/lib/engine/types";
 
 export const maxDuration = 60;
-const SLOTS = ["gst_certificate", "pan_card", "cancelled_cheque", "incorporation_certificate", "security_certificate"];
+const SLOTS = ["gst_certificate", "pan_card", "w9_form", "cancelled_cheque", "incorporation_certificate", "security_certificate"];
 const MAX_BYTES = 8 * 1024 * 1024;
 
 // Reads one document with AI. Accepts either a sample file reference (JSON) or an uploaded file (multipart).
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     scenario = body.scenario;
     file = body.file;
     preferRecorded = !!body.prefer_recorded;
-    if (!/^V\d{2}$/.test(scenario ?? "") || !/^(docs|fix)\/[a-z_]+\.(pdf|jpg)$/.test(file))
+    if (!/^V\d{2}$/.test(scenario ?? "") || !/^(docs|fix)\/[a-z0-9_]+\.(pdf|jpg)$/.test(file))
       return NextResponse.json({ error: "Unknown sample file" }, { status: 400 });
     bytes = fs.readFileSync(scenarioFile(scenario!, file));
   }

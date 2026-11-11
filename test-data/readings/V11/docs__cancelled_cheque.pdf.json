@@ -1,0 +1,16 @@
+{
+  "slot": "cancelled_cheque",
+  "file": "docs/cancelled_cheque.pdf",
+  "doc_type": "bank_letter",
+  "fields": {
+    "account_holder": "BRIGHTWATER INDUSTRIAL SUPPLY LLC",
+    "account_number": "52571821951",
+    "bank_name": "LAKESHORE SPECIMEN BANK",
+    "ifsc": "047292402"
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "gemini-3.6-flash was busy, read by gemini-3-flash-preview. Document is a fictional specimen bank account verification letter.",
+  "ms": 8841,
+  "model": "gemini-3-flash-preview"
+}

@@ -38,6 +38,9 @@ const REASON_LABEL: Record<string, string> = {
   DOC_PAN_MISMATCH: "PAN card ≠ form",
   DOC_COI_MISMATCH: "Incorporation cert. ≠ form",
   DUPLICATE_VENDOR: "Already a vendor",
+  W9_TIN_MISMATCH: "W-9 EIN ≠ form",
+  W9_UNSIGNED: "W-9 not signed",
+  POSSIBLE_WATCHLIST_MATCH: "Possible sanctions match",
   PAN_BELONGS_TO_OTHER_VENDOR: "PAN on another vendor",
 };
 const SEV: Record<string, { label: string; color: string }> = {

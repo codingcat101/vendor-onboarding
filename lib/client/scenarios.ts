@@ -24,6 +24,9 @@ export const SAMPLE_BLURB: Record<string, { name: string; what: string }> = {
   V08: { name: "Lotus Print House", what: "Cancelled cheque missing; vendor goes quiet" },
   V09: { name: "Thames Precision Tools (UK)", what: "Enters an Indian GSTIN as its UK tax ID" },
   V10: { name: "Lumen Payroll Services", what: "Gets payroll data access; ISO 27001 certificate has expired" },
+  V11: { name: "Brightwater Industrial Supply (US)", what: "Ohio LLC paid by ACH: W-9, EIN and bank letter all agree" },
+  V12: { name: "Harborline Logistics (US)", what: "W-9 is in its name, but the bank letter is for another company" },
+  V13: { name: "Sabel Ridge Trading (US)", what: "Name is close to an entry on the sanctions watchlist" },
 };
 
 let cache: SampleScenario[] | null = null;

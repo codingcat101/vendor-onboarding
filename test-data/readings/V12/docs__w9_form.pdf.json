@@ -1,0 +1,17 @@
+{
+  "slot": "w9_form",
+  "file": "docs/w9_form.pdf",
+  "doc_type": "w9_form",
+  "fields": {
+    "business_name": "Harborline",
+    "entity_type": "C corporation",
+    "legal_name": "Harborline Logistics Inc.",
+    "signature_date": "2026-10-30",
+    "tin": "46-9032477"
+  },
+  "confidence": 0.99,
+  "source": "ai",
+  "notes": "Specimen Form W-9 document.",
+  "ms": 21531,
+  "model": "gemini-3.6-flash"
+}

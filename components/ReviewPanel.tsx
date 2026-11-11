@@ -22,6 +22,7 @@ export function ReviewPanel({ c, run }: { c: Case; run: CaseRun }) {
 
   const teachable = canTeach(run.checks);
   const signoffOnly = run.decision.reasons.every((r) => r.code === "STRATEGIC_SIGNOFF_REQUIRED");
+  const screening = run.checks.find((k) => k.code === "POSSIBLE_WATCHLIST_MATCH" && k.outcome === "fail");
   const decided = !!c.final;
 
   const decide = async (status: "APPROVED" | "REJECTED") => {
@@ -99,13 +100,23 @@ export function ReviewPanel({ c, run }: { c: Case; run: CaseRun }) {
               <li key={r.code}>{r.message}</li>
             ))}
           </ul>
+          {screening && (
+            <div className="mb-3 rounded-md border border-review/40 bg-review-bg px-3 py-2 text-[13px]">
+              <p className="font-semibold text-review">Possible sanctions match: compare before you clear it</p>
+              <p className="mt-0.5">
+                Vendor name “{String(screening.evidence?.screened_name)}” vs listed “{String(screening.evidence?.list_entry)}” ({String(screening.evidence?.entry_id)}, {Math.round(Number(screening.evidence?.similarity) * 100)}% similar).
+                Check country, address and tax ID against the list entry. Clearing it needs your name and a reason, and can never become a rule.
+                This demo uses a fictional specimen list; production would screen the OFAC SDN and Consolidated Screening lists.
+              </p>
+            </div>
+          )}
           <label className="block">
             <span className="label">Why? This is saved to the audit trail{teachable.ok ? " and used to suggest a rule" : ""}.</span>
             <textarea
               className="field min-h-[72px]"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder={teachable.ok ? "e.g. Sole proprietors often bank as “Traders” while registered as “Trading Co.”. Same business." : "e.g. Checked the contract and data-processing terms."}
+              placeholder={screening ? "e.g. Not the listed party: different spelling, country, address and EIN. Cleared." : teachable.ok ? "e.g. Sole proprietors often bank as “Traders” while registered as “Trading Co.”. Same business." : "e.g. Checked the contract and data-processing terms."}
             />
           </label>
           {teachable.ok && (
@@ -180,7 +191,7 @@ export function GuardrailPanel({ c, run }: { c: Case; run: CaseRun }) {
   return (
     <Section title="Can a reviewer override this?">
       <p className="text-[14px]">
-        No. This case failed {hard.length === 1 ? "a fraud check" : `${hard.length} fraud checks`}: {[...new Set(hard.map((h) => HARD_LABEL[h.code!] ?? h.title))].join("; ")}. Those can&apos;t be
+        No. This case failed {hard.length === 1 ? "a guardrail check" : `${hard.length} guardrail checks`}: {[...new Set(hard.map((h) => HARD_LABEL[h.code!] ?? h.title))].join("; ")}. Those can&apos;t be
         approved by hand or relaxed by a taught rule. The right next step is a call to the vendor using contact details from an independent source, not the ones on this form.
       </p>
       <button

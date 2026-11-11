@@ -6,7 +6,7 @@ import { scenarioFile } from "@/lib/engine/fixtures";
 export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get("scenario") ?? "";
   const rel = req.nextUrl.searchParams.get("path") ?? "";
-  if (!/^V\d{2}$/.test(id) || !/^(docs|fix)\/[a-z_]+\.(pdf|jpg)$/.test(rel)) return new Response("Not found", { status: 404 });
+  if (!/^V\d{2}$/.test(id) || !/^(docs|fix)\/[a-z0-9_]+\.(pdf|jpg)$/.test(rel)) return new Response("Not found", { status: 404 });
   try {
     const bytes = fs.readFileSync(scenarioFile(id, rel));
     return new Response(bytes, {

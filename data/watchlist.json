@@ -1,0 +1,13 @@
+{
+  "_note": "SPECIMEN watchlist. Every entry is fictional and made up for this demo. It stands in for real screening lists such as the US Treasury OFAC SDN list and the US Consolidated Screening List; in production the app would screen against those (or a screening provider) and refresh them daily.",
+  "list": "Specimen sanctions list",
+  "version": "2026-11-01",
+  "entries": [
+    { "id": "SPEC-0001", "name": "Sable Ridge Trading Co", "aliases": ["Sable Ridge General Trading"], "country": "Fictional", "program": "SPECIMEN-A" },
+    { "id": "SPEC-0002", "name": "Northgate Allied Supply LLC", "aliases": [], "country": "Fictional", "program": "SPECIMEN-A" },
+    { "id": "SPEC-0003", "name": "Corvane Maritime Holdings", "aliases": ["Corvane Shipping"], "country": "Fictional", "program": "SPECIMEN-B" },
+    { "id": "SPEC-0004", "name": "Pellmoor Industrial Group", "aliases": [], "country": "Fictional", "program": "SPECIMEN-B" },
+    { "id": "SPEC-0005", "name": "Halvorsen Ashby Freight", "aliases": ["H.A. Freight Services"], "country": "Fictional", "program": "SPECIMEN-C" },
+    { "id": "SPEC-0006", "name": "Tamsin Vale Exports", "aliases": [], "country": "Fictional", "program": "SPECIMEN-C" }
+  ]
+}

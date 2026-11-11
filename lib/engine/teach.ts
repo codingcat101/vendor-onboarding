@@ -23,6 +23,8 @@ export function teachableCheck(checks: CheckResult[]) {
 
 export function canTeach(checks: CheckResult[]): { ok: true; check: CheckResult } | { ok: false; reason: string } {
   const hard = checks.find((c) => c.outcome === "fail" && c.code && HARD_CODES.has(c.code));
+  if (hard?.code === "POSSIBLE_WATCHLIST_MATCH")
+    return { ok: false, reason: "This case is a possible sanctions match. Those are never cleared by a rule: a named person compares the details and records why, every time." };
   if (hard)
     return { ok: false, reason: `This case failed a fraud check: the ${HARD_LABEL[hard.code!] ?? hard.title}. Fraud checks can't be taught or overridden; they protect against paying the wrong party.` };
   const t = teachableCheck(checks);

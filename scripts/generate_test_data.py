@@ -318,6 +318,63 @@ S["V10"] = dict(
                   after_fix=dict(status="PENDING_INTERNAL", reasons=["STRATEGIC_SIGNOFF_REQUIRED"])),
 )
 
+
+# ----------------------------------------------------------------------------
+# V11-V13: US vendors (W-9 + ACH bank letter). Own random stream, added last, so earlier data is unchanged.
+# ----------------------------------------------------------------------------
+rng_us = random.Random(1111)
+
+
+def aba_routing(prefix: str) -> str:
+    """A 9-digit number that passes the ABA 3-7-1 checksum (fictional bank)."""
+    while True:
+        d = [int(x) for x in prefix] + [rng_us.randint(0, 9) for _ in range(8 - len(prefix))]
+        for last in range(10):
+            n = d + [last]
+            if (3 * (n[0] + n[3] + n[6]) + 7 * (n[1] + n[4] + n[7]) + (n[2] + n[5] + n[8])) % 10 == 0:
+                return "".join(map(str, n))
+
+
+def ein() -> str:
+    return f"{rng_us.choice([27, 31, 46, 82, 86, 88])}{rng_us.randint(1000000, 9999999)}"
+
+
+def us_vendor(legal, trade, constitution, street, city, state, zipc, tin, contact, email, phone, holder):
+    return dict(legal_name=legal, trade_name=trade, constitution=constitution, country="US",
+                address=dict(line1=street, city=city, state=state, pincode=zipc), tax_id=tin,
+                contact=dict(name=contact, email=email, phone=phone),
+                bank=dict(account_holder=holder, account_number="".join(str(rng_us.randint(0, 9)) for _ in range(11)),
+                          ifsc=aba_routing("04"), bank_name="Lakeshore Specimen Bank (fictional)"))
+
+
+us_docs = {"w9_form": "w9", "cancelled_cheque": "bankletter_us"}
+S["V11"] = dict(
+    title="US 1 — Ohio LLC paid by ACH: W-9, EIN and bank letter all agree",
+    invite=dict(buyer="Priya Nair (Procurement)", category="Electrical supplies", annual_spend_inr=2_500_000, data_access=False),
+    form=us_vendor("Brightwater Industrial Supply LLC", "Brightwater Supply", "Limited Liability Company", "2150 Lakeside Avenue",
+                   "Cleveland", "Ohio", "44114", ein(), "Megan Kowalski", "ap@brightwatersupply.example", "+1 216 555 0142",
+                   "BRIGHTWATER INDUSTRIAL SUPPLY LLC"),
+    docs=us_docs, w9=dict(entity="LLC (S corporation)", signed="2026-10-21"),
+    expected=dict(tier="STANDARD", status="APPROVED", reasons=[]),
+)
+S["V12"] = dict(
+    title="US 2 — W-9 is in the vendor's name, but the bank letter is for a different company",
+    invite=dict(buyer="Priya Nair (Procurement)", category="Logistics", annual_spend_inr=6_000_000, data_access=False),
+    form=us_vendor("Harborline Logistics Inc.", "Harborline", "Corporation", "40 East Bay Street", "Savannah", "Georgia",
+                   "31401", ein(), "Daniel Reyes", "billing@harborline.example", "+1 912 555 0177", "HARBORLINE LOGISTICS INC"),
+    docs=us_docs, w9=dict(entity="C corporation", signed="2026-10-30"), letter_holder="COASTAL LEDGER HOLDINGS LLC",
+    expected=dict(tier="STANDARD", status="REJECTED", reasons=["BANK_NAME_MISMATCH"]),
+)
+S["V13"] = dict(
+    title="US 3 — Name is close to an entry on the (specimen) sanctions watchlist: a person decides",
+    invite=dict(buyer="Priya Nair (Procurement)", category="Office stationery", annual_spend_inr=300_000, data_access=False),
+    form=us_vendor("Sabel Ridge Trading LLC", "Sabel Ridge Office Supply", "Limited Liability Company", "1801 East Speedway Boulevard",
+                   "Tucson", "Arizona", "85719", ein(), "Ana Whitfield", "orders@sabelridge.example", "+1 520 555 0119",
+                   "SABEL RIDGE TRADING LLC"),
+    docs=us_docs, w9=dict(entity="LLC (partnership)", signed="2026-11-02"),
+    expected=dict(tier="LOW", status="PENDING_INTERNAL", reasons=["POSSIBLE_WATCHLIST_MATCH"]),
+)
+
 # ----------------------------------------------------------------------------
 # Document rendering
 # ----------------------------------------------------------------------------
@@ -571,8 +628,95 @@ def render_seccert(c, f):
     watermark(c)
 
 
+DOCX = {}  # per-scenario extras for US documents (W-9 details, bank-letter holder)
+
+
+def fmt_ein(t):
+    return f"{t[:2]}-{t[2:]}"
+
+
+def render_w9(c, f):
+    w = DOCX["w9"]
+    c.setFont("Helvetica-Bold", 22)
+    c.drawString(18 * mm, H - 26 * mm, "Form W-9")
+    c.setFont("Helvetica", 8)
+    c.drawString(18 * mm, H - 31 * mm, "(Rev. March 2024)  SPECIMEN layout")
+    c.setFont("Helvetica-Bold", 12)
+    c.drawCentredString(W / 2 + 10 * mm, H - 24 * mm, "Request for Taxpayer")
+    c.drawCentredString(W / 2 + 10 * mm, H - 30 * mm, "Identification Number and Certification")
+    c.line(18 * mm, H - 35 * mm, W - 18 * mm, H - 35 * mm)
+    a = f["address"]
+    classes = ["Individual/sole proprietor", "C corporation", "S corporation", "Partnership", "Trust/estate", "LLC"]
+    y = H - 42 * mm
+    rows = [("1  Name of entity/individual", f["legal_name"]), ("2  Business name, if different", f.get("trade_name", "")),
+            ("5  Address", a["line1"]), ("6  City, state, ZIP", f"{a['city']}, {a['state']} {a['pincode']}")]
+    y = kv_table(c, 18 * mm, y, rows[:2], label_w=58 * mm, width=174 * mm)
+    c.setFont("Helvetica", 9)
+    c.drawString(20 * mm, y - 6 * mm, "3a  Federal tax classification (check one):")
+    x = 20 * mm
+    yy = y - 13 * mm
+    for i, cl in enumerate(classes):
+        checked = w["entity"].startswith(cl) or (cl == "LLC" and w["entity"].startswith("LLC")) or (w["entity"] == cl)
+        cx = x + (i % 3) * 58 * mm
+        cy = yy - (i // 3) * 7 * mm
+        c.rect(cx, cy - 1, 3.2 * mm, 3.2 * mm)
+        if checked:
+            c.setFont("Helvetica-Bold", 10)
+            c.drawString(cx + 0.6 * mm, cy, "X")
+        c.setFont("Helvetica", 9)
+        label = cl
+        if cl == "LLC":
+            label = "LLC. Tax classification: " + (w["entity"].split("(")[1].rstrip(")") if "(" in w["entity"] else "")
+        c.drawString(cx + 5 * mm, cy, label)
+    y = kv_table(c, 18 * mm, yy - 16 * mm, rows[2:], label_w=58 * mm, width=174 * mm)
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(18 * mm, y - 10 * mm, "Part I  Taxpayer Identification Number (TIN)")
+    c.setFont("Helvetica", 9)
+    c.drawString(18 * mm, y - 18 * mm, "Social security number")
+    c.rect(60 * mm, y - 21 * mm, 50 * mm, 8 * mm)
+    c.drawString(18 * mm, y - 30 * mm, "Employer identification number")
+    c.rect(60 * mm, y - 33 * mm, 50 * mm, 8 * mm)
+    c.setFont("Courier-Bold", 13)
+    c.drawString(64 * mm, y - 31 * mm, fmt_ein(f["tax_id"]))
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(18 * mm, y - 46 * mm, "Part II  Certification")
+    c.setFont("Helvetica", 8)
+    c.drawString(18 * mm, y - 52 * mm, "Under penalties of perjury, I certify that the number shown on this form is my correct taxpayer identification number")
+    c.drawString(18 * mm, y - 56 * mm, "and that I am not subject to backup withholding. (Abridged specimen text.)")
+    c.setFont("Helvetica", 9)
+    c.drawString(18 * mm, y - 70 * mm, "Sign here   Signature of U.S. person:")
+    c.setFont("Times-Italic", 16)
+    c.drawString(78 * mm, y - 70 * mm, f["contact"]["name"])
+    c.setFont("Helvetica", 9)
+    m, d, yr = w["signed"][5:7], w["signed"][8:10], w["signed"][:4]
+    c.drawString(140 * mm, y - 70 * mm, f"Date:  {m}/{d}/{yr}")
+    watermark(c)
+
+
+def render_bankletter_us(c, f):
+    b = f["bank"]
+    holder = DOCX.get("letter_holder") or b["account_holder"]
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(20 * mm, H - 28 * mm, "LAKESHORE SPECIMEN BANK  (fictional bank)")
+    c.setFont("Helvetica", 9)
+    c.drawString(20 * mm, H - 34 * mm, "100 Specimen Plaza, Cleveland, OH 44113  ·  SPECIMEN")
+    c.setFont("Helvetica", 10)
+    c.drawString(20 * mm, H - 50 * mm, "November 3, 2026")
+    c.drawString(20 * mm, H - 62 * mm, "To whom it may concern")
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(20 * mm, H - 74 * mm, "Bank account verification letter (ACH)")
+    c.setFont("Helvetica", 10)
+    c.drawString(20 * mm, H - 84 * mm, "This letter confirms that the business checking account below is open and in good standing.")
+    rows = [("Account holder", holder), ("Account type", "Business checking"), ("ABA routing number (ACH)", b["ifsc"]),
+            ("Account number", b["account_number"])]
+    kv_table(c, 20 * mm, H - 92 * mm, rows, label_w=55 * mm, width=150 * mm)
+    c.drawString(20 * mm, H - 145 * mm, "Sincerely,")
+    c.drawString(20 * mm, H - 160 * mm, "Specimen Officer, Treasury Services (fictional)")
+    watermark(c)
+
+
 RENDER = {"seccert": render_seccert, "bankletter": render_bankletter, "gst": render_gst, "pan": render_pan, "cheque": render_cheque, "coi": render_coi,
-          "invoice": render_invoice}
+          "invoice": render_invoice, "w9": render_w9, "bankletter_us": render_bankletter_us}
 
 
 def pdf_bytes(kind, form):
@@ -649,6 +793,12 @@ def ground_truth(slot, spec, form):
     if kind == "seccert":
         return dict(doc_type="security_certificate", holder=form["legal_name"].upper(), standard="ISO/IEC 27001:2022",
                     certificate_number=CERT["number"], valid_until=CERT["valid_until"])
+    if kind == "w9":
+        return dict(doc_type="w9_form", legal_name=form["legal_name"], business_name=form.get("trade_name", ""),
+                    tin=fmt_ein(form["tax_id"]), signature_date=DOCX["w9"]["signed"])
+    if kind == "bankletter_us":
+        return dict(doc_type="bank_letter", account_number=b["account_number"], ifsc=b["ifsc"],
+                    account_holder=DOCX.get("letter_holder") or b["account_holder"])
     if kind == "bankletter":
         return dict(doc_type="bank_letter", account_number=b["account_number"], account_holder=b["account_holder"])
     raise ValueError(kind)
@@ -669,6 +819,7 @@ def main():
         uploaded, truth = {}, {}
         for slot, spec in s["docs"].items():
             CERT.clear(); CERT.update(s.get("cert", {}))
+            DOCX.clear(); DOCX.update(w9=s.get("w9"), letter_holder=s.get("letter_holder"))
             name = write_doc(folder / "docs", slot, spec, form)
             uploaded[slot] = f"docs/{name}"
             truth[f"docs/{name}"] = ground_truth(slot, spec, form)

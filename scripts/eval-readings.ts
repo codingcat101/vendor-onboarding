@@ -8,7 +8,10 @@ import { normaliseName } from "../lib/engine/names";
 import type { DocSlot } from "../lib/engine/types";
 
 const key = process.env.GEMINI_API_KEY!;
-const ID = new Set(["gstin", "pan", "account_number", "ifsc", "cin"]);
+const ID = new Set(["gstin", "pan", "account_number", "ifsc", "cin", "tin"]);
+// ONLY=V11,V12 reads just those samples and keeps the earlier rows for the rest (saves free-tier quota).
+const ONLY = process.env.ONLY ? new Set(process.env.ONLY.split(",")) : null;
+const OUT = path.join(process.cwd(), "test-data", "readings", "accuracy.json");
 const norm = (k: string, v = "") => (ID.has(k) ? v.toUpperCase().replace(/[^A-Z0-9]/g, "") : normaliseName(v));
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -25,8 +28,14 @@ async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
 }
 
 (async () => {
-  const rows: { model?: string; doc: string; type_ok: boolean; got_type: string; fields: number; correct: number; misses: string[]; conf: number; ms: number }[] = [];
+  type Row = { model?: string; doc: string; type_ok: boolean; got_type: string; fields: number; correct: number; misses: string[]; conf: number; ms: number };
+  const rows: Row[] = [];
+  const earlier: Row[] = ONLY && fs.existsSync(OUT) ? JSON.parse(fs.readFileSync(OUT, "utf8")).rows : [];
   for (const s of loadScenarios()) {
+    if (ONLY && !ONLY.has(s.id)) {
+      rows.push(...earlier.filter((r) => r.doc.startsWith(`${s.id}/`)));
+      continue;
+    }
     for (const [file, truth] of Object.entries(s.expected.document_truth)) {
       const slot = (Object.entries({ ...s.sub.documents, ...s.expected.fix_documents }).find(([, f]) => f === file)?.[0] ?? "gst_certificate") as DocSlot;
       const bytes = fs.readFileSync(scenarioFile(s.id, file));
@@ -54,6 +63,6 @@ async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
   const t = rows.filter((r) => r.type_ok).length;
   const avg = rows.reduce((a, r) => a + r.ms, 0) / rows.length / 1000;
   const summary = { documents: rows.length, doc_type_accuracy: t / rows.length, field_accuracy: c / f, fields_total: f, fields_correct: c, avg_seconds: avg, models_tried: MODELS, run_at: new Date().toISOString(), rows };
-  fs.writeFileSync(path.join(process.cwd(), "test-data", "readings", "accuracy.json"), JSON.stringify(summary, null, 2));
+  fs.writeFileSync(OUT, JSON.stringify(summary, null, 2));
   console.log(`\nDocument type: ${t}/${rows.length}   Fields: ${c}/${f} (${((100 * c) / f).toFixed(1)}%)   Avg ${avg.toFixed(1)}s per document`);
 })();

@@ -1,0 +1,16 @@
+{
+  "slot": "cancelled_cheque",
+  "file": "docs/cancelled_cheque.pdf",
+  "doc_type": "bank_letter",
+  "fields": {
+    "account_holder": "SABEL RIDGE TRADING LLC",
+    "account_number": "73800293652",
+    "bank_name": "LAKESHORE SPECIMEN BANK",
+    "ifsc": "045998834"
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "gemini-3.6-flash was busy, read by gemini-3-flash-preview. Fictional specimen bank account verification letter.",
+  "ms": 10720,
+  "model": "gemini-3-flash-preview"
+}

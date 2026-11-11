@@ -349,5 +349,78 @@
         "valid_until": "2029-09-30"
       }
     }
+  },
+  "V11": {
+    "title": "US 1 — Ohio LLC paid by ACH: W-9, EIN and bank letter all agree",
+    "tier": "STANDARD",
+    "status": "APPROVED",
+    "reasons": [],
+    "fix_documents": {},
+    "fix_fields": {},
+    "document_truth": {
+      "docs/w9_form.pdf": {
+        "doc_type": "w9_form",
+        "legal_name": "Brightwater Industrial Supply LLC",
+        "business_name": "Brightwater Supply",
+        "tin": "31-4315134",
+        "signature_date": "2026-10-21"
+      },
+      "docs/cancelled_cheque.pdf": {
+        "doc_type": "bank_letter",
+        "account_number": "52571821951",
+        "ifsc": "047292402",
+        "account_holder": "BRIGHTWATER INDUSTRIAL SUPPLY LLC"
+      }
+    }
+  },
+  "V12": {
+    "title": "US 2 — W-9 is in the vendor's name, but the bank letter is for a different company",
+    "tier": "STANDARD",
+    "status": "REJECTED",
+    "reasons": [
+      "BANK_NAME_MISMATCH"
+    ],
+    "fix_documents": {},
+    "fix_fields": {},
+    "document_truth": {
+      "docs/w9_form.pdf": {
+        "doc_type": "w9_form",
+        "legal_name": "Harborline Logistics Inc.",
+        "business_name": "Harborline",
+        "tin": "46-9032477",
+        "signature_date": "2026-10-30"
+      },
+      "docs/cancelled_cheque.pdf": {
+        "doc_type": "bank_letter",
+        "account_number": "45432897561",
+        "ifsc": "047920745",
+        "account_holder": "COASTAL LEDGER HOLDINGS LLC"
+      }
+    }
+  },
+  "V13": {
+    "title": "US 3 — Name is close to an entry on the (specimen) sanctions watchlist: a person decides",
+    "tier": "LOW",
+    "status": "PENDING_INTERNAL",
+    "reasons": [
+      "POSSIBLE_WATCHLIST_MATCH"
+    ],
+    "fix_documents": {},
+    "fix_fields": {},
+    "document_truth": {
+      "docs/w9_form.pdf": {
+        "doc_type": "w9_form",
+        "legal_name": "Sabel Ridge Trading LLC",
+        "business_name": "Sabel Ridge Office Supply",
+        "tin": "31-3272420",
+        "signature_date": "2026-11-02"
+      },
+      "docs/cancelled_cheque.pdf": {
+        "doc_type": "bank_letter",
+        "account_number": "73800293652",
+        "ifsc": "045998834",
+        "account_holder": "SABEL RIDGE TRADING LLC"
+      }
+    }
   }
 }

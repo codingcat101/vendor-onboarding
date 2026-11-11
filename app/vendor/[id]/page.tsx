@@ -12,10 +12,11 @@ import { Section } from "@/components/ui";
 
 const BUYER_COMPANY = "Northwind Retail Pvt Ltd";
 const CONSTITUTIONS = ["Private Limited Company", "Public Limited Company", "Limited Liability Partnership", "Partnership Firm", "Proprietorship"];
+const US_CONSTITUTIONS = ["Limited Liability Company", "Corporation", "Partnership", "Sole Proprietorship"];
 const ALL_SLOTS: DocSlot[] = ALL_DOC_SLOTS;
 
 /** Checks whose fix is a new upload of a particular document. */
-const CHECK_SLOT: Record<string, DocSlot> = { security_cert_valid: "security_certificate", cheque_matches: "cancelled_cheque" };
+const CHECK_SLOT: Record<string, DocSlot> = { security_cert_valid: "security_certificate", cheque_matches: "cancelled_cheque", w9_matches: "w9_form" };
 
 const emptySub = (name: string, email: string): Submission => ({
   legal_name: name, trade_name: "", constitution: CONSTITUTIONS[0], country: "IN",
@@ -65,7 +66,7 @@ export default function VendorPortal() {
   // In the fix flow, show only the parts of the form that need fixing.
   const SECTION_OF: Record<string, string> = {
     required_fields: "all", gstin_format: "tax", tax_id_country: "tax", pan_format: "tax", cin_format: "tax",
-    ifsc_valid: "bank", account_format: "bank", intl_bank: "bank", cheque_matches: "bank",
+    ifsc_valid: "bank", account_format: "bank", intl_bank: "bank", cheque_matches: "bank", w9_matches: "tax",
   };
   const flagged = new Set(
     isFix ? last!.checks.filter((k) => k.outcome === "fail" && k.severity === "vendor_fixable").map((k) => SECTION_OF[k.id]).filter(Boolean) : [],
@@ -146,12 +147,12 @@ export default function VendorPortal() {
         {show("business") && (
             <Section title="Business">
               <div className="grid gap-4 sm:grid-cols-2">
-                {F("Legal name (as on PAN / GST certificate)", "legal_name", { span: true })}
+                {F(india ? "Legal name (as on PAN / GST certificate)" : sub.country === "US" ? "Legal name (as on your W-9, line 1)" : "Legal name", "legal_name", { span: true })}
                 {F("Trade name, if different", "trade_name")}
                 <label>
                   <span className="label">Type of business</span>
                   <select className="field" value={sub.constitution} onChange={(e) => set("constitution", e.target.value)}>
-                    {CONSTITUTIONS.map((x) => <option key={x}>{x}</option>)}
+                    {[...(sub.country === "US" ? US_CONSTITUTIONS : CONSTITUTIONS), ...(![...CONSTITUTIONS, ...US_CONSTITUTIONS].includes(sub.constitution) ? [sub.constitution] : [])].map((x) => <option key={x}>{x}</option>)}
                   </select>
                 </label>
                 {F("Registered address", "address.line1", { span: true })}
@@ -160,7 +161,7 @@ export default function VendorPortal() {
                 {F(india ? "PIN code" : sub.country === "US" ? "ZIP code" : "Postcode", "address.pincode", { mono: true })}
                 <label>
                   <span className="label">Country</span>
-                  <select className="field" value={sub.country} onChange={(e) => set("country", e.target.value)}>
+                  <select className="field" value={sub.country} onChange={(e) => { const v = e.target.value; set("country", v); if (v === "US" && !US_CONSTITUTIONS.includes(sub.constitution)) set("constitution", US_CONSTITUTIONS[0]); if (v !== "US" && US_CONSTITUTIONS.includes(sub.constitution)) set("constitution", CONSTITUTIONS[0]); }}>
                     {Object.entries(COUNTRY_NAME).map(([code, name]) => (
                       <option key={code} value={code}>{name.replace(/^the /, "").replace(/^./, (x) => x.toUpperCase())}</option>
                     ))}
@@ -196,7 +197,7 @@ export default function VendorPortal() {
               <div className="grid gap-4 sm:grid-cols-2">
                 {F(`Account holder name (as printed on ${india ? "cheque" : "bank letter"})`, "bank.account_holder", { span: true })}
                 {F(sub.country === "GB" ? "IBAN" : "Account number", "bank.account_number", { mono: true, placeholder: sub.country === "GB" ? "GB33 BUKB 2020 1555 5555 55" : "" })}
-                {sub.country !== "GB" && F(india ? "IFSC" : "Routing number", "bank.ifsc", { mono: true, placeholder: india ? "HDFC0001234" : "021000021" })}
+                {sub.country !== "GB" && F(india ? "IFSC" : "ABA routing number (ACH)", "bank.ifsc", { mono: true, placeholder: india ? "HDFC0001234" : "021000021" })}
                 {F("Bank name", "bank.bank_name")}
               </div>
             </Section>

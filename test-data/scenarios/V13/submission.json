@@ -1,0 +1,29 @@
+{
+  "scenario_id": "V13",
+  "legal_name": "Sabel Ridge Trading LLC",
+  "trade_name": "Sabel Ridge Office Supply",
+  "constitution": "Limited Liability Company",
+  "country": "US",
+  "address": {
+    "line1": "1801 East Speedway Boulevard",
+    "city": "Tucson",
+    "state": "Arizona",
+    "pincode": "85719"
+  },
+  "tax_id": "313272420",
+  "contact": {
+    "name": "Ana Whitfield",
+    "email": "orders@sabelridge.example",
+    "phone": "+1 520 555 0119"
+  },
+  "bank": {
+    "account_holder": "SABEL RIDGE TRADING LLC",
+    "account_number": "73800293652",
+    "ifsc": "045998834",
+    "bank_name": "Lakeshore Specimen Bank (fictional)"
+  },
+  "documents": {
+    "w9_form": "docs/w9_form.pdf",
+    "cancelled_cheque": "docs/cancelled_cheque.pdf"
+  }
+}

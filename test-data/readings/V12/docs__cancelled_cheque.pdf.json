@@ -1,0 +1,16 @@
+{
+  "slot": "cancelled_cheque",
+  "file": "docs/cancelled_cheque.pdf",
+  "doc_type": "bank_letter",
+  "fields": {
+    "account_holder": "COASTAL LEDGER HOLDINGS LLC",
+    "account_number": "45432897561",
+    "bank_name": "LAKESHORE SPECIMEN BANK (fictional bank)",
+    "ifsc": "047920745"
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "Specimen bank account verification letter.",
+  "ms": 4522,
+  "model": "gemini-3.6-flash"
+}

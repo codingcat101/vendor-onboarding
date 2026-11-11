@@ -257,12 +257,14 @@ function DetailsPanel({ c }: { c: Case }) {
     ["Trade name", sub.trade_name || "—"],
     ["Type", sub.constitution],
     ["Address", `${sub.address.line1}, ${sub.address.city}, ${sub.address.state} ${sub.address.pincode}`],
-    ["GSTIN", sub.gstin || "—", true],
-    ["PAN", sub.pan || "—", true],
+    ...((sub.country === "IN"
+      ? [["GSTIN", sub.gstin || "—", true], ["PAN", sub.pan || "—", true]]
+      : [["Country", sub.country], [sub.country === "US" ? "EIN" : "Tax ID", sub.tax_id || "—", true]]) as [string, string, boolean?][]),
     ...(sub.cin ? ([["CIN", sub.cin, true]] as [string, string, boolean][]) : []),
     ["Account holder", sub.bank.account_holder],
     ["Account", sub.bank.account_number, true],
-    ["IFSC", `${sub.bank.ifsc} (${sub.bank.bank_name})`, true],
+    ...(sub.country === "GB" ? [] : ([[sub.country === "US" ? "Routing (ACH)" : "IFSC", `${sub.bank.ifsc} (${sub.bank.bank_name})`, true]] as [string, string, boolean][])),
+    ...(sub.country === "GB" ? ([["Bank", sub.bank.bank_name]] as [string, string][]) : []),
     ["Contact", `${sub.contact.name}, ${sub.contact.email}`],
   ];
   return (
@@ -382,7 +384,9 @@ function CheckRow({ k }: { k: CheckResult }) {
               {SEV_LABEL[k.severity!]}
             </span>
           )}
-          {k.hard && <span className="rounded border border-reject px-1 text-[11px] font-semibold text-reject" title="No taught rule can override this check">fraud guardrail</span>}
+          {k.hard && (k.severity === "fraud"
+            ? <span className="rounded border border-reject px-1 text-[11px] font-semibold text-reject" title="No taught rule can override this check">fraud guardrail</span>
+            : <span className="rounded border border-review px-1 text-[11px] font-semibold text-review" title="Only a named person can clear this, never a rule">person decides, no rules</span>)}
           {k.carried_over && <span className="text-[12px] text-ink-3">kept from last run</span>}
         </div>
         <p className="text-ink-2">{k.message}</p>

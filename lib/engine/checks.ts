@@ -6,7 +6,8 @@ import {
 } from "./ids";
 import { lookupIfsc } from "./ifsc";
 import { validateAbaRouting, validateIban } from "./ids";
-import { bestMatch, compareNames } from "./names";
+import { bestMatch, compareNames, normaliseName } from "./names";
+import watchlistData from "../../data/watchlist.json";
 import { HARD_CODES, Policy, requiredDocs } from "./policy";
 import {
   ALL_DOC_SLOTS, COUNTRY_NAME, CheckResult, DOC_LABEL, DocSlot, docLabel, ExistingVendor, ExtractedDoc, Invite, Stage, Submission, Tier,
@@ -435,6 +436,46 @@ const crossRef: CheckDef[] = [
     },
   },
   {
+    id: "w9_matches",
+    stage: "cross_reference",
+    title: "W-9 matches the form (name, EIN, signed)",
+    deps: ["doc.w9_form", "form.tax_id", "form.legal_name", "form.trade_name", "form.constitution", "policy"],
+    applies: (ctx) => !!ctx.sub.documents.w9_form,
+    run: (ctx) => {
+      const d = usableDoc(ctx, "w9_form");
+      if (!d) return skip("Waiting for a valid W-9");
+      const tinDoc = (d.fields.tin ?? "").replace(/\D/g, "");
+      const tinForm = (ctx.sub.tax_id ?? "").replace(/\D/g, "");
+      if (!tinDoc) return notRead("taxpayer ID", "W-9");
+      if (!d.fields.legal_name?.trim()) return notRead("name on line 1", "W-9");
+      const ev = { w9_name: d.fields.legal_name, w9_tin: tail(tinDoc), form_tax_id: tail(tinForm), entity_type: d.fields.entity_type ?? "", signed: d.fields.signature_date ?? "" };
+      if (tinDoc !== tinForm)
+        return fail("vendor_fixable", "W9_TIN_MISMATCH", `W-9 shows taxpayer ID ${tail(tinDoc)}, the form says ${tail(tinForm)}`, {
+          vendor_message: `The EIN on your W-9 (ending ${tinDoc.slice(-4)}) doesn't match the tax ID you entered (ending ${tinForm.slice(-4)}). Please correct the form, or upload the W-9 for this business.`,
+          evidence: ev,
+        });
+      const m = bestMatch(d.fields.legal_name, [ctx.sub.legal_name, ctx.sub.trade_name], ctx.policy.name_equivalences, ctx.sub.constitution);
+      if (m.verdict === "mismatch")
+        return fail("fraud", "DOC_NAME_MISMATCH", `W-9 is in the name of "${d.fields.legal_name}", not "${ctx.sub.legal_name}"`, {
+          evidence: { on_document: d.fields.legal_name, on_form: ctx.sub.legal_name, similarity: m.score },
+        });
+      if (m.verdict === "near")
+        return fail("needs_review", "DOC_NAME_NEAR_MATCH", `W-9 name "${d.fields.legal_name}" is close to, but not the same as, "${m.against}"`, {
+          evidence: { on_document: d.fields.legal_name, on_form: m.against, similarity: m.score },
+        });
+      const signed = parseDate(d.fields.signature_date);
+      if (!signed)
+        return fail("vendor_fixable", "W9_UNSIGNED", "W-9 is not signed and dated", {
+          vendor_message: "Your W-9 isn't signed and dated (Part II). Please sign it and upload it again.",
+          evidence: ev,
+        });
+      const ageDays = Math.floor((ctx.asOf.getTime() - signed.getTime()) / DAY);
+      if (ageDays > 3 * 365)
+        return warn(`W-9 matches but was signed ${fmtDate(signed)}, over three years ago; ask for a fresh one at renewal`, ev);
+      return pass(`W-9 name and EIN ${tail(tinDoc)} match the form; signed ${fmtDate(signed)}`, ev);
+    },
+  },
+  {
     id: "coi_matches",
     stage: "cross_reference",
     title: "Incorporation certificate matches the form",
@@ -563,7 +604,58 @@ const fraud: CheckDef[] = [
   },
 ];
 
-export const CHECKS: CheckDef[] = [...completeness, ...documentChecks, ...format, ...crossRef, ...compliance, ...fraud];
+// ---------------------------------------------------------------------------
+// Sanctions / watchlist screen. A possible hit never rejects on its own (most are false positives),
+// and taught name rules are deliberately NOT applied here: a named person decides every hit.
+// ---------------------------------------------------------------------------
+export const WATCHLIST = watchlistData as { list: string; version: string; entries: { id: string; name: string; aliases: string[]; country: string; program: string }[] };
+
+/** Every name this vendor could be paid or known under. */
+export function screenedNames(ctx: Pick<Ctx, "sub" | "docs">) {
+  const { sub, docs } = ctx;
+  const raw = [
+    sub.legal_name, sub.trade_name, sub.bank.account_holder,
+    docs.cancelled_cheque?.fields.account_holder, docs.w9_form?.fields.legal_name, docs.w9_form?.fields.business_name,
+  ];
+  const seen = new Set<string>();
+  return raw.filter((n): n is string => !!n?.trim()).filter((n) => {
+    const k = normaliseName(n);
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
+
+const screening: CheckDef[] = [
+  {
+    id: "watchlist_screen",
+    stage: "fraud_screen",
+    title: "Sanctions / watchlist screen",
+    deps: ["form.legal_name", "form.trade_name", "form.bank", "doc.cancelled_cheque", "doc.w9_form"],
+    run: (ctx) => {
+      const names = screenedNames(ctx);
+      let best: { name: string; entry: (typeof WATCHLIST.entries)[number]; listed: string; score: number } | null = null;
+      for (const n of names)
+        for (const e of WATCHLIST.entries)
+          for (const listed of [e.name, ...e.aliases]) {
+            const m = compareNames(n, listed); // no taught rules, on purpose
+            if (m.verdict !== "mismatch" && (!best || m.score > best.score)) best = { name: n, entry: e, listed, score: m.score };
+          }
+      if (best) {
+        const pct = Math.round(best.score * 100);
+        return fail("needs_review", "POSSIBLE_WATCHLIST_MATCH",
+          `"${best.name}" is ${pct}% similar to "${best.listed}" (${best.entry.id}, ${WATCHLIST.list}). Most hits are false positives: a person compares address, country and IDs before clearing it, and no rule can clear it`, {
+            evidence: { screened_name: best.name, list_entry: best.listed, entry_id: best.entry.id, program: best.entry.program, similarity: best.score, list_version: WATCHLIST.version },
+          });
+      }
+      return pass(`${names.length} name${names.length === 1 ? "" : "s"} screened against ${WATCHLIST.entries.length} entries on the ${WATCHLIST.list} (v${WATCHLIST.version}); no close match`, {
+        names: names.join("; "), list_version: WATCHLIST.version,
+      });
+    },
+  },
+];
+
+export const CHECKS: CheckDef[] = [...completeness, ...documentChecks, ...format, ...crossRef, ...compliance, ...fraud, ...screening];
 
 // keep tree-shakers / linters aware this is used for display
 export const STATE_NAMES = Object.values(GST_STATE_CODES);

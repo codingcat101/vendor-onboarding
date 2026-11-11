@@ -1,0 +1,29 @@
+{
+  "scenario_id": "V11",
+  "legal_name": "Brightwater Industrial Supply LLC",
+  "trade_name": "Brightwater Supply",
+  "constitution": "Limited Liability Company",
+  "country": "US",
+  "address": {
+    "line1": "2150 Lakeside Avenue",
+    "city": "Cleveland",
+    "state": "Ohio",
+    "pincode": "44114"
+  },
+  "tax_id": "314315134",
+  "contact": {
+    "name": "Megan Kowalski",
+    "email": "ap@brightwatersupply.example",
+    "phone": "+1 216 555 0142"
+  },
+  "bank": {
+    "account_holder": "BRIGHTWATER INDUSTRIAL SUPPLY LLC",
+    "account_number": "52571821951",
+    "ifsc": "047292402",
+    "bank_name": "Lakeshore Specimen Bank (fictional)"
+  },
+  "documents": {
+    "w9_form": "docs/w9_form.pdf",
+    "cancelled_cheque": "docs/cancelled_cheque.pdf"
+  }
+}

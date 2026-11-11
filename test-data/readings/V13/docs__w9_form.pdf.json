@@ -1,0 +1,17 @@
+{
+  "slot": "w9_form",
+  "file": "docs/w9_form.pdf",
+  "doc_type": "w9_form",
+  "fields": {
+    "business_name": "Sabel Ridge Office Supply",
+    "entity_type": "LLC. Tax classification: partnership",
+    "legal_name": "Sabel Ridge Trading LLC",
+    "signature_date": "2026-11-02",
+    "tin": "31-3272420"
+  },
+  "confidence": 0.98,
+  "source": "ai",
+  "notes": "Specimen W-9 form extracted cleanly.",
+  "ms": 9462,
+  "model": "gemini-3.6-flash"
+}

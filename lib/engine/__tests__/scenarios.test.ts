@@ -182,3 +182,52 @@ describe("tiering", () => {
     );
   });
 });
+
+describe("US vendors: W-9, ACH and the sanctions screen", () => {
+  const check = (r: ReturnType<typeof run>, id: string) => r.checks.find((c) => c.id === id)!;
+
+  it("a US vendor must upload a W-9; Indian documents are not asked for", () => {
+    const s = byId.V11;
+    const { w9_form: _, ...rest } = s.sub.documents;
+    const r = runOnboarding({ sub: { ...s.sub, documents: rest }, invite: s.invite, docs: truthReadings(s, rest), master, policy: DEFAULT_POLICY, asOf: "2026-11-10" });
+    expect(r.decision.vendor_actions[0].message).toMatch(/Form W-9/);
+    expect(r.decision.vendor_actions[0].message).not.toMatch(/PAN|GST/);
+  });
+
+  it("V12: the W-9 itself is fine; the bank letter's holder is another company, which is a fraud guardrail", () => {
+    const r = run("V12");
+    expect(check(r, "w9_matches").outcome).toBe("pass");
+    const bank = check(r, "bank_holder_name");
+    expect(bank.code).toBe("BANK_NAME_MISMATCH");
+    expect(bank.hard).toBe(true);
+  });
+
+  it("a W-9 with a different EIN goes back to the vendor; an unsigned one too", () => {
+    const s = byId.V11;
+    const docs = truthReadings(s);
+    const wrongTin = { ...docs, w9_form: { ...docs.w9_form!, fields: { ...docs.w9_form!.fields, tin: "27-1234567" } } };
+    const r1 = runOnboarding({ sub: s.sub, invite: s.invite, docs: wrongTin, master, policy: DEFAULT_POLICY, asOf: "2026-11-10" });
+    expect(r1.decision.status).toBe("PENDING_VENDOR");
+    expect(r1.decision.reasons.map((x) => x.code)).toContain("W9_TIN_MISMATCH");
+    const unsigned = { ...docs, w9_form: { ...docs.w9_form!, fields: { ...docs.w9_form!.fields, signature_date: "" } } };
+    const r2 = runOnboarding({ sub: s.sub, invite: s.invite, docs: unsigned, master, policy: DEFAULT_POLICY, asOf: "2026-11-10" });
+    expect(r2.decision.reasons.map((x) => x.code)).toContain("W9_UNSIGNED");
+  });
+
+  it("V13: a possible watchlist hit goes to a person, is never auto-rejected, can't be taught, and ignores taught name rules", async () => {
+    const r = run("V13");
+    expect(r.decision.status).toBe("PENDING_INTERNAL");
+    const hit = check(r, "watchlist_screen");
+    expect(hit.severity).toBe("needs_review");
+    expect(hit.hard).toBe(true);
+    const { canTeach } = await import("../teach");
+    expect(canTeach(r.checks).ok).toBe(false);
+    // Even a taught rule that makes the two spellings equal does not clear the screen.
+    const p2 = applyRule(DEFAULT_POLICY, { type: "name_equivalence", phrases: ["SABLE", "SABEL"] }, { at: "", by: "test", summary: "" });
+    expect(check(run("V13", p2), "watchlist_screen").code).toBe("POSSIBLE_WATCHLIST_MATCH");
+  });
+
+  it("every vendor, Indian or not, is screened; none of the other samples is a false positive", () => {
+    for (const s of scenarios.filter((x) => x.id !== "V13")) expect(check(run(s.id), "watchlist_screen").outcome).toBe("pass");
+  });
+});
