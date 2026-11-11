@@ -8,7 +8,19 @@ Before a company pays a new vendor, someone has to confirm the vendor is who the
 
 This project is a working onboarding process that takes a vendor's form and documents and returns **Approved**, **Pending** or **Rejected**, with every reason visible. AI reads the documents; plain, auditable code makes every decision; anything the vendor can fix goes back to them automatically and is chased until it's resolved; anything unclear goes to a person, who can teach the process a rule for next time, inside guardrails that no rule can relax.
 
-On 23 test documents, the AI identified every document type and read 75 of 76 fields correctly (98.7%), at 6.5 seconds per document. All 10 sample vendors, including seven fraud and failure scenarios, reach the expected decision from real AI readings. 53 automated tests cover the checks, the fix loop, the teaching and the guardrails.
+It works for Indian vendors in depth (GSTIN, PAN, IFSC, cancelled cheque), for **US vendors** (IRS Form W-9, EIN, ACH routing number, bank verification letter) and for UK vendors (VAT, IBAN). Every vendor is screened against a sanctions watchlist, and a possible hit always goes to a named person.
+
+On 37 test documents from all three countries, the AI identified every document type and read 123 of 124 fields correctly (99.2%), at about 7 seconds per document. All 13 sample vendors reach the expected decision from real AI readings, both first time and after the vendor's fix (16 of 16 decisions). 64 automated tests cover the checks, the fix loop, the teaching and the guardrails, and a **governance page** in the app recomputes these evals live and shows what each agent is allowed to do on its own.
+
+### The five capabilities of an onboarding agent, and where each one lives here
+
+| Capability | In this project | See it in the app | Next step |
+|---|---|---|---|
+| **Adaptive intake and document chasing** | The tier decides which documents are asked for (W-9 for US vendors, ISO 27001 / SOC 2 for data access); the vendor's fix page shows only what's wrong; the follow-up agent reminds on day 2, escalates on day 5, closes on day 10 | Lotus Print House → "+3 days"; Ganga Office Supplies fix page | Real email and WhatsApp, replies parsed automatically |
+| **Multi-field validation and fraud prevention** | AI reads documents blind; 28 checks (9 to 24 apply to a given vendor) cross-reference every field; shared bank accounts, borrowed tax IDs and third-party bank accounts are rejected; sanctions watchlist screen | Orion Engineering (borrowed GSTIN), Harborline (bank letter in another company's name), Sabel Ridge (watchlist) | Live OFAC SDN and Consolidated Screening lists; IRS TIN Matching; GST portal; penny-drop |
+| **Risk-based routing** | Low / Standard / Strategic tiers set at invite from spend and data access; only grey areas reach a person; strategic vendors always need a sign-off | Invite page; Review queue | Customer-specific tier thresholds and approval chains |
+| **ERP master data creation** | A clean vendor record draft (CSV / JSON) for every case, with an evidence checklist and exceptions | "Prepared for review" on any case | Direct write to the ERP's vendor master by API (NetSuite, SAP, Oracle) after approval |
+| **Audit trails and agent governance** | Every check, message, decision and rule change is logged with who and why; an operating procedure lists what each agent may do alone; live evals and guardrail probes | Case activity log; Rules; **Governance** | Persisted, tamper-evident audit log; evals run on every policy change |
 
 ---
 
@@ -39,6 +51,8 @@ Every arrow is a person. The loop between "check" and "email vendor" can run sev
 | Subtle cross-field inconsistencies | A GSTIN that passes its check digit but contains another company's PAN | Only visible when two fields are compared character by character |
 | Manual follow-up | Reminders depend on someone remembering | No schedule, no escalation |
 | Inbox as audit trail | "Why did we approve this vendor?" | No record of evidence or reasoning |
+| Sanctions exposure (US) | A vendor whose name is one letter away from a listed party | Long lists, fuzzy names; most hits are false positives, so someone must judge each one |
+| Payment redirection (US) | W-9 in the vendor's name, bank letter for a different company | Each document looks fine on its own |
 
 ### 2.3 Root causes
 
@@ -100,7 +114,7 @@ flowchart TD
     I[Buyer invites vendor] --> T{Risk tier<br/>from spend + data access}
     T --> S[Vendor submits<br/>form + documents]
     S --> R[AI reads each document<br/>without seeing the form]
-    R --> C[16-21 checks<br/>in 5 stages]
+    R --> C[9-24 checks<br/>in 5 stages]
     C --> D{Decision}
     D -->|all pass| A[Approved]
     D -->|vendor can fix| PV[Pending: vendor]
@@ -133,7 +147,7 @@ flowchart TD
 | Standard | ₹5L to ₹1 Cr | + PAN card | Automatic if all checks pass |
 | Strategic | Over ₹1 Cr, or access to data or systems | + Certificate of incorporation | A person always signs off |
 
-Outside India, a bank letter replaces the cancelled cheque and GST/PAN documents aren't required. Any vendor that will get access to company data or systems must also upload a **security certificate (ISO 27001 or SOC 2)**, whatever the spend; it must be current and issued to the vendor.
+Outside India, a bank letter replaces the cancelled cheque and GST/PAN documents aren't required. **US vendors** always upload an IRS **Form W-9**: the AI reads the legal name, business name, tax classification, EIN and signature date, and the checks compare them with the form (the W-9 is what a US payer needs for 1099 reporting and to avoid backup withholding). Any vendor that will get access to company data or systems must also upload a **security certificate (ISO 27001 or SOC 2)**, whatever the spend; it must be current and issued to the vendor.
 
 ### 6.3 Every check
 
@@ -153,9 +167,11 @@ Outside India, a bank letter replaces the cancelled cheque and GST/PAN documents
 | Cross-reference | Documents match the form | Certificate or PAN card in another name; different numbers | **Fraud → `DOC_NAME_MISMATCH`**; Review → `DOC_NAME_NEAR_MATCH`, `DOC_GSTIN_MISMATCH`, `DOC_PAN_MISMATCH`, `DOC_COI_MISMATCH`, `DOC_FIELD_NOT_READ` |
 | Cross-reference | Cheque matches bank details | Typo in account number | Vendor fix → `DOC_BANK_MISMATCH` |
 | Cross-reference | Bank account holder is the vendor | Payments going to a third party | **Fraud → `BANK_NAME_MISMATCH`**; Review → `BANK_NAME_NEAR_MATCH` |
+| Cross-reference | W-9 matches the form (US) | EIN on the W-9 differs from the form; W-9 in another name; unsigned | Vendor fix → `W9_TIN_MISMATCH`, `W9_UNSIGNED`; **Fraud → `DOC_NAME_MISMATCH`**; Review → `DOC_NAME_NEAR_MATCH` |
 | Compliance | Security certificate (data-access vendors) | Wrong standard, expired, or issued to another company | Vendor fix → `SECURITY_CERT_WRONG_STANDARD`, `SECURITY_CERT_EXPIRED`; Review → `SECURITY_CERT_NAME_MISMATCH` (may be a group certificate); expiring within 90 days → note |
 | Fraud screen | Bank account not used by another vendor | Classic fake-vendor pattern | **Fraud → `BANK_ACCOUNT_SHARED`** |
 | Fraud screen | GSTIN / PAN not on file for another vendor | Borrowed identity; duplicate vendor | **Fraud → `GSTIN_BELONGS_TO_OTHER_VENDOR`, `PAN_BELONGS_TO_OTHER_VENDOR`**; Review → `DUPLICATE_VENDOR` |
+| Fraud screen | Sanctions / watchlist screen (every vendor) | Legal name, trade name, bank holder and W-9 names close to a listed party | Review, **person only → `POSSIBLE_WATCHLIST_MATCH`** (never auto-rejected, never cleared by a rule) |
 
 ### 6.4 Lifecycle of a case
 
@@ -251,7 +267,7 @@ sequenceDiagram
     end
 ```
 
-Each check declares the inputs it depends on. On a resubmission the engine compares the old and new inputs and re-runs only the checks that depend on what changed; the rest are kept and marked "kept from last run". When a vendor replaces one document, 4 of 16 checks re-run.
+Each check declares the inputs it depends on. On a resubmission the engine compares the old and new inputs and re-runs only the checks that depend on what changed; the rest are kept and marked "kept from last run". When a vendor replaces one document, 4 of 17 checks re-run.
 
 ---
 
@@ -291,44 +307,67 @@ flowchart TD
 4. A field the AI couldn't read goes to a person; it's never treated as a mismatch.
 5. Low AI confidence (< 70%) asks the vendor for a clearer copy instead of guessing.
 6. An AI-drafted message is used only if it keeps the fix link; otherwise a plain template is sent.
+7. A possible sanctions match always goes to a named person, who must give a reason. It can't be taught, and the screen deliberately ignores taught name rules, so a rule written for one purpose can't quietly clear a sanctions hit.
+
+### 9.1 Agent governance: what each agent may do, and how we know it works
+
+Agents that act on their own need the same controls as a new employee: a written list of what they may do alone, what needs a person, and what nobody can do; and evidence that they keep doing it right. The **Governance** page in the app shows both.
+
+| Action | Done by | Alone? |
+|---|---|---|
+| Read an uploaded document | AI reader (3-model fallback) | On its own; sees only the document |
+| Decide approve / send back / review / reject | Decision rules (code) | On its own; deterministic and logged |
+| Ask the vendor to fix something; chase a silent vendor | Follow-up agent | On its own; can't approve or reject |
+| Approve a low or standard-risk vendor | Decision rules | On its own, only if every check passes |
+| Approve a strategic vendor; clear a possible sanctions match | A named reviewer | Needs a person, with a reason |
+| Change the rules | AI proposes, reviewer approves | Needs a person; guardrails, dry run, version history |
+| Create the vendor in the ERP | Finance | Needs a person (v1: CSV / JSON; v2: API write) |
+| Override a fraud check | Nobody | Never |
+
+The page recomputes, on every visit, from the recorded AI readings: decision accuracy on every sample (16 of 16), reading accuracy per document type, **8 guardrail probes** (teach an exception on a fraud case, teach away a sanctions hit, a rule that names a vendor, a rule that makes another company count as the vendor, AI down, AI misses a field, strategic vendor without sign-off), and whether repeat runs give identical results. It also shows what the agents did in the visitor's own sandbox: cases decided with no person, documents read live vs from recorded readings, messages drafted by AI vs template, and every rule change with who approved it.
 
 ---
 
 ## 10. Edge cases
 
-All 10 sample vendors are in the live app ("Sample vendors" panel). Companies, people and identifiers are fictional; every document is marked SPECIMEN. Details: [test-data/README.md](test-data/README.md).
+All 13 sample vendors are in the live app ("Sample vendors" panel). Companies, people and identifiers are fictional; every document is marked SPECIMEN. Details: [test-data/README.md](test-data/README.md).
 
 | # | Scenario | What makes it hard | Outcome | Shows |
 |---|---|---|---|---|
 | V01 | Clean, Standard tier | Nothing; baseline | Approved | Happy path |
 | V02 | Clean, Strategic tier (₹2.4 Cr, data access) | Everything passes | Pending: review (sign-off) | Risk tiers |
-| V03 | Invoice uploaded as GST certificate | Looks like a valid PDF | Pending: vendor → fix → Approved (4 of 16 re-run) | Fix loop, incremental re-checks |
+| V03 | Invoice uploaded as GST certificate | Looks like a valid PDF | Pending: vendor → fix → Approved (4 of 17 re-run) | Fix loop, incremental re-checks |
 | V04 | Bank account "Sharma Traders" vs "Sharma Trading Co." | Could be legitimate or fraud | Pending: review → reviewer teaches a rule | Teaching |
 | V05 | Same pattern; cheque is a tilted phone photo | Image quality | Approved automatically under the taught rule | Reuse of judgment, AI on photos |
 | V06 | Bank account already belongs to another vendor | Every document is consistent | Rejected; teaching an exception is refused | Fraud guardrail |
 | V07 | GSTIN passes its check digit but belongs to another company | Format checks alone miss it | Rejected on 4 signals | Cross-referencing |
 | V08 | Cheque missing; vendor goes quiet | No reply | Reminder day 2, escalation day 5, closed day 10 | Follow-up agent |
-| V09 | UK vendor enters its Indian subsidiary's GSTIN | Valid GSTIN, wrong country | Pending: vendor → VAT number → Approved (2 of 8 re-run) | Country-aware tax IDs |
+| V09 | UK vendor enters its Indian subsidiary's GSTIN | Valid GSTIN, wrong country | Pending: vendor → VAT number → Approved (2 of 9 re-run) | Country-aware tax IDs |
 | V10 | Payroll vendor with data access; ISO 27001 certificate expired | Everything else is clean | Pending: vendor → renewed certificate → Pending: review (sign-off) | Compliance evidence, expiry |
+| V11 | US LLC (Ohio) paid by ACH | W-9, EIN, routing checksum and bank letter must all agree | Approved | US intake |
+| V12 | US corporation: W-9 in its own name, bank letter for "Coastal Ledger Holdings LLC" | Each document is valid on its own | Rejected; can't be taught | Payment-redirection guardrail |
+| V13 | US LLC whose name is 99% similar to a listed party | Probably a false positive, but only a person may decide | Pending: review; reviewer clears with a reason | Sanctions screening, human in the loop |
 
 ---
 
 ## 11. Evidence and testing
 
-**AI reading accuracy.** Measured against hand-recorded correct values on 23 specimen documents, including a tilted phone photo of a cheque and an image-only scan of a PAN card (`npx tsx scripts/eval-readings.ts`, results in `test-data/readings/accuracy.json`).
+**AI reading accuracy.** Measured against hand-recorded correct values on 37 specimen documents (Indian, UK and US, including W-9s), including a tilted phone photo of a cheque and an image-only scan of a PAN card (`npx tsx scripts/eval-readings.ts`, results in `test-data/readings/accuracy.json`).
 
 | Document type identified | Fields read correctly | Average time per document |
 |---|---|---|
-| 23 / 23 (100%) | 75 / 76 (98.7%) | 6.5 s |
+| 37 / 37 (100%) | 123 / 124 (99.2%) | 7.2 s |
 
-**Automated tests: 53** (`npm test`).
+The same numbers, per document type, are recomputed live on the app's Governance page.
+
+**Automated tests: 64** (`npm test`).
 
 | Suite | Tests | Covers |
 |---|---|---|
 | `ids.test.ts` | 12 | GSTIN check digit on published samples, PAN, IFSC registry, UK VAT, IBAN, US routing, name matching |
-| `scenarios.test.ts` | 25 | Every sample's decision, fix loop, incremental re-checks, teaching, guardrails, tiers, AI failures |
+| `scenarios.test.ts` | 33 | Every sample's decision, fix loop, incremental re-checks, teaching, guardrails, tiers, AI failures, W-9, sanctions screen |
 | `teach.test.ts` | 6 | Rule building, guardrails, reading the reviewer's note |
-| `ai-readings.test.ts` | 10 | Every sample decided correctly from the **real** recorded AI readings |
+| `ai-readings.test.ts` | 13 | Every sample decided correctly from the **real** recorded AI readings |
 
 **Two real bugs found by testing, and fixed:**
 
@@ -345,10 +384,11 @@ All 10 sample vendors are in the live app ("Sample vendors" panel). Companies, p
 |---|---|---|
 | Checks engine, decision, policy, guardrails | Production-quality logic, fully tested | Move policy to a database with an approval workflow |
 | AI document reading | Works on PDFs, scans and photos; measured | Larger evaluation set from real (consented) documents |
-| Identity verification | Format and cross-reference checks | Confirm at the source: GST portal for GSTINs, penny-drop for bank accounts |
+| Identity verification | Format and cross-reference checks | Confirm at the source: GST portal for GSTINs, penny-drop for bank accounts, IRS TIN Matching for US name / EIN pairs |
+| Sanctions screening | Fuzzy screen against a fictional specimen list | OFAC SDN and Consolidated Screening lists (or a screening provider), refreshed daily; re-screen existing vendors on every list update |
 | Follow-up agent | Runs on a simulated clock in the browser | Scheduled job with real email or WhatsApp |
 | Storage | Per-visitor browser sandbox | Postgres with role-based access and encryption |
-| Integrations | Bundled vendor master | Two-way sync with SAP, Oracle or Workday |
+| Integrations | Bundled vendor master; vendor record exported as CSV / JSON | Direct write of approved vendors to the ERP by API (NetSuite, SAP, Oracle, Workday), then two-way sync |
 
 ### 12.2 Operational
 
@@ -380,7 +420,7 @@ monthly saving  =  vendors per month × reviewer minutes saved per vendor × loa
 
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
-| AI misreads a field | Low (98.7% measured) | Medium | Blind reading; every field cross-checked; an unread field goes to a person; confidence threshold |
+| AI misreads a field | Low (99.2% measured) | Medium | Blind reading; every field cross-checked; an unread field goes to a person; confidence threshold |
 | AI outage or quota exhausted | Medium | Medium | 3-model chain with timeouts; document routed to a person; paid tier in production |
 | A bad taught rule | Low | High | Code builds the rule; guardrails; preview of affected cases; human approval; versioned history |
 | Forged or edited documents | Medium | High | Cross-referencing catches borrowed identities; v2 adds verification at the source and forgery detection |
@@ -405,6 +445,7 @@ gantt
     Standard and Strategic tiers    :s1, after p2, 14d
     section v2
     GST portal and penny-drop checks :v1, after p2, 21d
+    Live sanctions lists, IRS TIN Matching :v5, after p2, 14d
     Email and WhatsApp replies       :v2, after p2, 14d
     ERP sync (SAP, Oracle, Workday)  :v3, after v2, 21d
     Forgery detection                :v4, after v1, 21d
@@ -417,7 +458,8 @@ gantt
 ## 14. Assumptions and limitations
 
 - Tier thresholds (₹5L, ₹1 Cr) are assumptions, kept in a versioned policy so a customer can set their own.
-- India is checked in depth; the UK and US are checked at format level (tax ID and bank checksums).
+- India is checked in depth. US vendors get a W-9 reading and cross-check, EIN format, ABA routing checksum and the sanctions screen; UK vendors get VAT and IBAN checksums.
+- The sanctions screen uses a small **fictional** specimen list; production would use the official lists. Matching is on names only; a person compares address, country and IDs.
 - Identifiers are validated by format, checksum and cross-reference, not yet confirmed with the GST portal or the bank.
 - Forged or digitally edited documents are not detected yet.
 - The demo uses a per-visitor browser sandbox and a bundled vendor master of 20 fictional vendors; messages appear in the app rather than being emailed.
@@ -431,17 +473,19 @@ gantt
 npm install
 echo "GEMINI_API_KEY=your-key" > .env.local
 npm run dev        # http://localhost:3000
-npm test           # 53 tests
+npm test           # 64 tests
 ```
 
 **Two-minute demo** (each visitor gets a private sandbox; "Reset demo" starts over):
 
-1. **Cases → Ganga Office Supplies → Submit.** Watch the documents being read and the checks run; it's returned for a wrong document. Open the fix page, attach the correct file, and only 4 of 16 checks re-run.
-2. **Cases → Run all 10 at once**, then **Dashboard.**
+1. **Cases → Ganga Office Supplies → Submit.** Watch the documents being read and the checks run; it's returned for a wrong document. Open the fix page, attach the correct file, and only 4 of 17 checks re-run.
+2. **Cases → Run all 13 at once**, then **Dashboard.**
 3. **Reviewer → Review queue → Sharma Trading Co.** Approve with a reason, add the suggested rule, and Gupta Trading Company is approved on its own.
 4. **Apex Facility Services → "Try to teach an exception anyway"** is refused.
 5. **Lotus Print House → "+3 days" three times:** reminder, escalation, closed.
 6. **Thames Precision Tools (UK):** wrong country's tax ID, fixed with a VAT number.
+7. **US vendors:** Harborline is rejected (bank letter for another company); Sabel Ridge waits for a reviewer to clear a possible sanctions match with a reason.
+8. **Governance:** the operating procedure, live evals and guardrail probes, and what the agents did in your sandbox.
 
 ---
 
@@ -450,10 +494,10 @@ npm test           # 53 tests
 ```
 lib/engine/          checks, decision, policy, teaching, name matching, identifier validators, AI reader
 lib/client/          browser sandbox store, submission pipeline, follow-up agent
-app/                 pages (cases, invite, vendor form, case file, review, dashboard, messages, rules)
-app/api/             read, run, draft, teach, scenarios, file
+app/                 pages (cases, invite, vendor form, case file, review, dashboard, messages, rules, governance)
+app/api/             read, run, draft, teach, scenarios, file, evals
 components/          shared UI, reviewer panel
-test-data/           10 sample vendors, documents, expected outcomes, recorded AI readings
-data/                vendor master; IFSC registry (Razorpay, MIT licence)
+test-data/           13 sample vendors, documents, expected outcomes, recorded AI readings
+data/                vendor master; specimen sanctions watchlist; IFSC registry (Razorpay, MIT licence)
 scripts/             test-data generator, AI accuracy evaluation
 ```
