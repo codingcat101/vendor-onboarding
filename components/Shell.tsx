@@ -94,6 +94,11 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
       <main className="mx-auto max-w-[1240px] px-4 py-6">{s.ready ? children : <p className="text-ink-3">Loading…</p>}</main>
+      <footer className="mx-auto max-w-[1240px] border-t border-rule px-4 py-5 text-[13px] text-ink-3">
+        Built by <span className="font-semibold text-ink-2">Aarchi Kothari</span> · IIT Roorkee · 23410001 · AI Solutions Analyst case study, problem statement 2 ·{" "}
+        <a className="underline" href="https://github.com/codingcat101/vendor-onboarding" target="_blank" rel="noreferrer">Code on GitHub</a>
+        <span className="block sm:inline"> · All companies and documents are fictional samples.</span>
+      </footer>
     </div>
   );
 }
