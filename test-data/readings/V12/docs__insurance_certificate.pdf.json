@@ -1,0 +1,18 @@
+{
+  "slot": "insurance_certificate",
+  "file": "docs/insurance_certificate.pdf",
+  "doc_type": "insurance_certificate",
+  "fields": {
+    "currency": "USD",
+    "general_liability": "2000000",
+    "insured": "Harborline Logistics Inc.",
+    "insurer": "Granite Specimen Casualty Co. (fictional)",
+    "policy_number": "GL-SPC-5520918",
+    "valid_until": "2027-02-28"
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "Fictional specimen certificate of liability insurance.",
+  "ms": 6171,
+  "model": "gemini-3.6-flash"
+}

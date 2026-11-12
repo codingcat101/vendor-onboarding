@@ -5,7 +5,7 @@ import { loadScenarios, scenarioFile, truthReading } from "@/lib/engine/fixtures
 import type { DocSlot } from "@/lib/engine/types";
 
 export const maxDuration = 60;
-const SLOTS = ["gst_certificate", "pan_card", "w9_form", "cancelled_cheque", "incorporation_certificate", "security_certificate"];
+const SLOTS = ["gst_certificate", "pan_card", "w9_form", "insurance_certificate", "cancelled_cheque", "incorporation_certificate", "security_certificate"];
 const MAX_BYTES = 8 * 1024 * 1024;
 
 // Reads one document with AI. Accepts either a sample file reference (JSON) or an uploaded file (multipart).

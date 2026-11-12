@@ -5,12 +5,12 @@
   "fields": {
     "account_holder": "COASTAL LEDGER HOLDINGS LLC",
     "account_number": "45432897561",
-    "bank_name": "LAKESHORE SPECIMEN BANK (fictional bank)",
+    "bank_name": "LAKESHORE SPECIMEN BANK",
     "ifsc": "047920745"
   },
-  "confidence": 1,
+  "confidence": 0.95,
   "source": "ai",
-  "notes": "Specimen bank account verification letter.",
-  "ms": 4522,
+  "notes": "Fictional specimen bank verification letter.",
+  "ms": 3818,
   "model": "gemini-3.6-flash"
 }

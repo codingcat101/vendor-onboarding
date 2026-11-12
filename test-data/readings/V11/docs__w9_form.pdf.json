@@ -4,14 +4,14 @@
   "doc_type": "w9_form",
   "fields": {
     "business_name": "Brightwater Supply",
-    "entity_type": "LLC (S corporation)",
+    "entity_type": "LLC. Tax classification: S corporation",
     "legal_name": "Brightwater Industrial Supply LLC",
     "signature_date": "2026-10-21",
     "tin": "31-4315134"
   },
-  "confidence": 0.95,
+  "confidence": 1,
   "source": "ai",
-  "notes": "Specimen Form W-9 document.",
-  "ms": 14314,
+  "notes": "Specimen W-9 document generated for testing.",
+  "ms": 4802,
   "model": "gemini-3.6-flash"
 }

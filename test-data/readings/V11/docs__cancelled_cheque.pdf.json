@@ -8,9 +8,9 @@
     "bank_name": "LAKESHORE SPECIMEN BANK",
     "ifsc": "047292402"
   },
-  "confidence": 1,
+  "confidence": 0.95,
   "source": "ai",
-  "notes": "gemini-3.6-flash was busy, read by gemini-3-flash-preview. Document is a fictional specimen bank account verification letter.",
-  "ms": 8841,
-  "model": "gemini-3-flash-preview"
+  "notes": "Fictional specimen bank account verification letter generated for testing.",
+  "ms": 4562,
+  "model": "gemini-3.6-flash"
 }

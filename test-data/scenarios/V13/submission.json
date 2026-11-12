@@ -24,6 +24,7 @@
   },
   "documents": {
     "w9_form": "docs/w9_form.pdf",
-    "cancelled_cheque": "docs/cancelled_cheque.pdf"
+    "cancelled_cheque": "docs/cancelled_cheque.pdf",
+    "insurance_certificate": "docs/insurance_certificate.pdf"
   }
 }

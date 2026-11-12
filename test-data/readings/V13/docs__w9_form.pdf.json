@@ -11,7 +11,7 @@
   },
   "confidence": 0.98,
   "source": "ai",
-  "notes": "Specimen W-9 form extracted cleanly.",
-  "ms": 9462,
+  "notes": "Specimen Form W-9.",
+  "ms": 3976,
   "model": "gemini-3.6-flash"
 }

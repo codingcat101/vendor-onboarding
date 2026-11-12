@@ -1,0 +1,18 @@
+{
+  "slot": "insurance_certificate",
+  "file": "docs/insurance_certificate.pdf",
+  "doc_type": "insurance_certificate",
+  "fields": {
+    "currency": "USD",
+    "general_liability": "1000000",
+    "insured": "Brightwater Industrial Supply LLC",
+    "insurer": "Granite Specimen Casualty Co. (fictional)",
+    "policy_number": "GL-SPC-4417302",
+    "valid_until": "2027-06-30"
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "Specimen liability insurance certificate.",
+  "ms": 4673,
+  "model": "gemini-3.6-flash"
+}

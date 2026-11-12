@@ -7,6 +7,7 @@ import { cachedReading } from "@/lib/engine/extract";
 import { Scenario, loadMaster, loadScenarios, truthReadings } from "@/lib/engine/fixtures";
 import { normaliseName } from "@/lib/engine/names";
 import { DEFAULT_POLICY, applyRule } from "@/lib/engine/policy";
+import { parseRequirementByRules, validateRequirement } from "@/lib/engine/requirements";
 import { canTeach, proposeNameRule, validateRule } from "@/lib/engine/teach";
 import type { DocSlot, ExtractedDoc, RunResult } from "@/lib/engine/types";
 
@@ -124,6 +125,11 @@ export async function GET() {
     const p = applyRule(DEFAULT_POLICY, { type: "name_equivalence", phrases: ["HARBORLINE LOGISTICS", "COASTAL LEDGER HOLDINGS"] }, { at: "", by: "probe", summary: "" });
     const c = run(by.V12, by.V12.sub, undefined, p).checks.find((k) => k.id === "bank_holder_name")!;
     return { held: c.code === "BANK_NAME_MISMATCH", result: c.code === "BANK_NAME_MISMATCH" ? "Still rejected: rules are never consulted for a clear mismatch" : "The rule passed the check" };
+  });
+  probe("Plain-English rule that loosens controls", "Procurement types “Skip the insurance check for small vendors under $1M”", () => {
+    const d = parseRequirementByRules("Skip the insurance check for small vendors under $1M");
+    const v = "error" in d ? { ok: false as const, reason: d.error } : validateRequirement(d, DEFAULT_POLICY);
+    return { held: !v.ok, result: v.ok ? "The requirement was accepted" : v.reason };
   });
   probe("AI fails to read a field", "The GSTIN on V01's certificate comes back blank", () => {
     const docs = truthReadings(by.V01);

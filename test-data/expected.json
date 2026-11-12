@@ -370,6 +370,13 @@
         "account_number": "52571821951",
         "ifsc": "047292402",
         "account_holder": "BRIGHTWATER INDUSTRIAL SUPPLY LLC"
+      },
+      "docs/insurance_certificate.pdf": {
+        "doc_type": "insurance_certificate",
+        "insured": "Brightwater Industrial Supply LLC",
+        "general_liability": "1000000",
+        "currency": "USD",
+        "valid_until": "2027-06-30"
       }
     }
   },
@@ -395,6 +402,13 @@
         "account_number": "45432897561",
         "ifsc": "047920745",
         "account_holder": "COASTAL LEDGER HOLDINGS LLC"
+      },
+      "docs/insurance_certificate.pdf": {
+        "doc_type": "insurance_certificate",
+        "insured": "Harborline Logistics Inc.",
+        "general_liability": "2000000",
+        "currency": "USD",
+        "valid_until": "2027-02-28"
       }
     }
   },
@@ -420,6 +434,58 @@
         "account_number": "73800293652",
         "ifsc": "045998834",
         "account_holder": "SABEL RIDGE TRADING LLC"
+      },
+      "docs/insurance_certificate.pdf": {
+        "doc_type": "insurance_certificate",
+        "insured": "Sabel Ridge Trading LLC",
+        "general_liability": "1000000",
+        "currency": "USD",
+        "valid_until": "2027-09-14"
+      }
+    }
+  },
+  "V14": {
+    "title": "US 4 — Certificate of insurance shows $500K general liability; US vendors need at least $1M",
+    "tier": "STANDARD",
+    "status": "PENDING_VENDOR",
+    "reasons": [
+      "INSURANCE_COVERAGE_LOW"
+    ],
+    "after_fix": {
+      "status": "APPROVED",
+      "reasons": []
+    },
+    "fix_documents": {
+      "insurance_certificate": "fix/insurance_certificate.pdf"
+    },
+    "fix_fields": {},
+    "document_truth": {
+      "docs/w9_form.pdf": {
+        "doc_type": "w9_form",
+        "legal_name": "Pinecrest IT Solutions LLC",
+        "business_name": "Pinecrest IT",
+        "tin": "88-4069125",
+        "signature_date": "2026-10-28"
+      },
+      "docs/cancelled_cheque.pdf": {
+        "doc_type": "bank_letter",
+        "account_number": "42777697341",
+        "ifsc": "046323961",
+        "account_holder": "PINECREST IT SOLUTIONS LLC"
+      },
+      "docs/insurance_certificate.pdf": {
+        "doc_type": "insurance_certificate",
+        "insured": "Pinecrest IT Solutions LLC",
+        "general_liability": "500000",
+        "currency": "USD",
+        "valid_until": "2027-04-30"
+      },
+      "fix/insurance_certificate.pdf": {
+        "doc_type": "insurance_certificate",
+        "insured": "Pinecrest IT Solutions LLC",
+        "general_liability": "1000000",
+        "currency": "USD",
+        "valid_until": "2027-04-30"
       }
     }
   }

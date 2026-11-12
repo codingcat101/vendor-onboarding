@@ -12,6 +12,7 @@ const MATCH_CHECK: Record<DocSlot, string> = {
   gst_certificate: "gst_doc_matches",
   pan_card: "pan_doc_matches",
   w9_form: "w9_matches",
+  insurance_certificate: "insurance_valid",
   cancelled_cheque: "cheque_matches",
   incorporation_certificate: "coi_matches",
   security_certificate: "security_cert_valid",

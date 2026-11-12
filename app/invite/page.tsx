@@ -2,14 +2,10 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useStore } from "@/lib/client/store";
-import { computeTier } from "@/lib/engine/policy";
+import { CATEGORIES, computeTier, describeScope, fmtMoney } from "@/lib/engine/policy";
 import { DOC_LABEL } from "@/lib/engine/types";
 import { Section, TierTag, inr } from "@/components/ui";
 
-const CATEGORIES = [
-  "Office stationery", "Packaging materials", "Housekeeping services", "Printing & signage", "Electrical supplies",
-  "Machined components", "Logistics", "IT services / data analytics", "Professional services",
-];
 
 export default function InvitePage() {
   const s = useStore();
@@ -21,6 +17,8 @@ export default function InvitePage() {
   const invite = { buyer: f.buyer, category: f.category, annual_spend_inr: spend, data_access: f.data_access };
   const { tier, why } = computeTier(invite, s.policy);
   const docs = [...s.policy.required_docs[tier], ...(f.data_access ? (["security_certificate"] as const) : [])];
+  // Requirements procurement wrote in plain English that could apply (country is only known once the vendor answers).
+  const reqs = (s.policy.requirements ?? []).filter((r) => (!r.applies_to.categories?.length || r.applies_to.categories.includes(f.category)) && (!r.applies_to.tiers?.length || r.applies_to.tiers.includes(tier)));
   const ok = f.vendor_name.trim() && /\S+@\S+\.\S+/.test(f.vendor_email);
 
   const send = () => {
@@ -75,7 +73,13 @@ export default function InvitePage() {
           {docs.map((d) => (
             <li key={d}>{DOC_LABEL[d]}</li>
           ))}
+          {reqs.map((r) => (
+            <li key={r.id}>
+              Certificate of insurance, at least {fmtMoney(r.min_liability, r.currency)} general liability{r.applies_to.countries?.length ? ` (${describeScope({ ...r, applies_to: { countries: r.applies_to.countries } })} only)` : ""}
+            </li>
+          ))}
         </ul>
+        <p className="mt-2 text-[13px] text-ink-3">Outside India the GST certificate and PAN aren&apos;t asked for; US vendors also send an IRS Form W-9.</p>
         <p className="mt-4 text-[14px] font-semibold">Approval</p>
         <p className="text-[14px] text-ink-2">
           {tier === "STRATEGIC" ? "A person always signs off, even when every check passes." : "Automatic when every check passes. Anything unclear goes to a reviewer."}

@@ -1,16 +1,16 @@
 {
-  "documents": 29,
+  "documents": 36,
   "doc_type_accuracy": 1,
-  "field_accuracy": 0.9896907216494846,
-  "fields_total": 97,
-  "fields_correct": 96,
-  "avg_seconds": 7.570724137931035,
+  "field_accuracy": 0.9919354838709677,
+  "fields_total": 124,
+  "fields_correct": 123,
+  "avg_seconds": 6.231277777777778,
   "models_tried": [
     "gemini-3.6-flash",
     "gemini-3-flash-preview",
     "gemini-3.1-flash-lite"
   ],
-  "run_at": "2026-11-11T06:28:00.466Z",
+  "run_at": "2026-11-12T06:19:04.829Z",
   "rows": [
     {
       "model": "gemini-3.6-flash",
@@ -275,30 +275,41 @@
       "fields": 4,
       "correct": 4,
       "misses": [],
-      "conf": 0.95,
-      "ms": 14314
+      "conf": 1,
+      "ms": 4802
     },
     {
-      "model": "gemini-3-flash-preview",
+      "model": "gemini-3.6-flash",
       "doc": "V11/docs/cancelled_cheque.pdf",
       "type_ok": true,
       "got_type": "bank_letter",
       "fields": 3,
       "correct": 3,
       "misses": [],
-      "conf": 1,
-      "ms": 8841
+      "conf": 0.95,
+      "ms": 4562
     },
     {
       "model": "gemini-3.6-flash",
+      "doc": "V11/docs/insurance_certificate.pdf",
+      "type_ok": true,
+      "got_type": "insurance_certificate",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 1,
+      "ms": 4673
+    },
+    {
+      "model": "gemini-3-flash-preview",
       "doc": "V12/docs/w9_form.pdf",
       "type_ok": true,
       "got_type": "w9_form",
       "fields": 4,
       "correct": 4,
       "misses": [],
-      "conf": 0.99,
-      "ms": 21531
+      "conf": 1,
+      "ms": 6777
     },
     {
       "model": "gemini-3.6-flash",
@@ -308,8 +319,19 @@
       "fields": 3,
       "correct": 3,
       "misses": [],
+      "conf": 0.95,
+      "ms": 3818
+    },
+    {
+      "model": "gemini-3.6-flash",
+      "doc": "V12/docs/insurance_certificate.pdf",
+      "type_ok": true,
+      "got_type": "insurance_certificate",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
       "conf": 1,
-      "ms": 4522
+      "ms": 6171
     },
     {
       "model": "gemini-3.6-flash",
@@ -320,7 +342,7 @@
       "correct": 4,
       "misses": [],
       "conf": 0.98,
-      "ms": 9462
+      "ms": 3976
     },
     {
       "model": "gemini-3-flash-preview",
@@ -331,7 +353,62 @@
       "correct": 3,
       "misses": [],
       "conf": 1,
-      "ms": 10720
+      "ms": 6963
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "doc": "V13/docs/insurance_certificate.pdf",
+      "type_ok": true,
+      "got_type": "insurance_certificate",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 0.95,
+      "ms": 7257
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "doc": "V14/docs/w9_form.pdf",
+      "type_ok": true,
+      "got_type": "w9_form",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 1,
+      "ms": 4702
+    },
+    {
+      "model": "gemini-3.6-flash",
+      "doc": "V14/docs/cancelled_cheque.pdf",
+      "type_ok": true,
+      "got_type": "bank_letter",
+      "fields": 3,
+      "correct": 3,
+      "misses": [],
+      "conf": 0.95,
+      "ms": 10678
+    },
+    {
+      "model": "gemini-3.6-flash",
+      "doc": "V14/docs/insurance_certificate.pdf",
+      "type_ok": true,
+      "got_type": "insurance_certificate",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 0.95,
+      "ms": 3435
+    },
+    {
+      "model": "gemini-3.6-flash",
+      "doc": "V14/fix/insurance_certificate.pdf",
+      "type_ok": true,
+      "got_type": "insurance_certificate",
+      "fields": 4,
+      "correct": 4,
+      "misses": [],
+      "conf": 1,
+      "ms": 6351
     }
   ]
 }

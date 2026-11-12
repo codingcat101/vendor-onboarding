@@ -16,7 +16,7 @@ const US_CONSTITUTIONS = ["Limited Liability Company", "Corporation", "Partnersh
 const ALL_SLOTS: DocSlot[] = ALL_DOC_SLOTS;
 
 /** Checks whose fix is a new upload of a particular document. */
-const CHECK_SLOT: Record<string, DocSlot> = { security_cert_valid: "security_certificate", cheque_matches: "cancelled_cheque", w9_matches: "w9_form" };
+const CHECK_SLOT: Record<string, DocSlot> = { security_cert_valid: "security_certificate", cheque_matches: "cancelled_cheque", w9_matches: "w9_form", insurance_valid: "insurance_certificate" };
 
 const emptySub = (name: string, email: string): Submission => ({
   legal_name: name, trade_name: "", constitution: CONSTITUTIONS[0], country: "IN",

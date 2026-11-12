@@ -21,7 +21,7 @@ type Evals = {
 
 const TYPE_LABEL: Record<string, string> = {
   gst_certificate: "GST certificate", pan_card: "PAN card", cancelled_cheque: "Cancelled cheque", bank_letter: "Bank letter (UK, US)",
-  incorporation_certificate: "Certificate of incorporation", security_certificate: "ISO 27001 certificate", invoice: "Invoice (wrong document)", w9_form: "IRS Form W-9",
+  incorporation_certificate: "Certificate of incorporation", security_certificate: "ISO 27001 certificate", invoice: "Invoice (wrong document)", w9_form: "IRS Form W-9", insurance_certificate: "Certificate of insurance",
 };
 const STATUS_WORD: Record<string, string> = { APPROVED: "Approved", REJECTED: "Rejected", PENDING_VENDOR: "Pending: vendor", PENDING_INTERNAL: "Pending: review" };
 

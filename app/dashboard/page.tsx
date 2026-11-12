@@ -40,6 +40,9 @@ const REASON_LABEL: Record<string, string> = {
   DUPLICATE_VENDOR: "Already a vendor",
   W9_TIN_MISMATCH: "W-9 EIN ≠ form",
   W9_UNSIGNED: "W-9 not signed",
+  INSURANCE_COVERAGE_LOW: "Insurance cover too low",
+  INSURANCE_EXPIRED: "Insurance expired",
+  INSURANCE_CURRENCY: "Insurance in another currency",
   POSSIBLE_WATCHLIST_MATCH: "Possible sanctions match",
   PAN_BELONGS_TO_OTHER_VENDOR: "PAN on another vendor",
 };

@@ -1,0 +1,18 @@
+{
+  "slot": "gst_certificate",
+  "file": "docs/insurance_certificate.pdf",
+  "doc_type": "insurance_certificate",
+  "fields": {
+    "currency": "USD",
+    "general_liability": "500000",
+    "insured": "Pinecrest IT Solutions LLC",
+    "insurer": "Granite Specimen Casualty Co. (fictional)",
+    "policy_number": "GL-SPC-7184420",
+    "valid_until": "2027-04-30"
+  },
+  "confidence": 0.95,
+  "source": "ai",
+  "notes": "Fictional specimen document.",
+  "ms": 3435,
+  "model": "gemini-3.6-flash"
+}

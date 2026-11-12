@@ -8,7 +8,7 @@ import { lookupIfsc } from "./ifsc";
 import { validateAbaRouting, validateIban } from "./ids";
 import { bestMatch, compareNames, normaliseName } from "./names";
 import watchlistData from "../../data/watchlist.json";
-import { HARD_CODES, Policy, requiredDocs } from "./policy";
+import { type Currency, HARD_CODES, Policy, describeScope, fmtMoney, requiredDocs, requirementsFor } from "./policy";
 import {
   ALL_DOC_SLOTS, COUNTRY_NAME, CheckResult, DOC_LABEL, DocSlot, docLabel, ExistingVendor, ExtractedDoc, Invite, Stage, Submission, Tier,
 } from "./types";
@@ -547,6 +547,54 @@ const compliance: CheckDef[] = [
       if (days < 90)
         return warn(`${std} certificate is valid but expires on ${fmtDate(until)}, in ${days} days`, { valid_until: fmtDate(until), days_left: days });
       return pass(`${std} certificate issued to ${d.fields.holder}, valid until ${fmtDate(until)}`, { valid_until: fmtDate(until), days_left: days });
+    },
+  },
+  {
+    id: "insurance_valid",
+    stage: "cross_reference",
+    title: "Insurance cover meets the minimum, is current and names this vendor",
+    deps: ["doc.insurance_certificate", "form.legal_name", "form.trade_name", "form.country", "policy"],
+    applies: (ctx) => !!ctx.sub.documents.insurance_certificate || requirementsFor(ctx.policy, ctx.sub, ctx.invite, ctx.tier).length > 0,
+    run: (ctx) => {
+      const d = usableDoc(ctx, "insurance_certificate");
+      if (!d) return skip("Waiting for a valid certificate of insurance");
+      const reqs = requirementsFor(ctx.policy, ctx.sub, ctx.invite, ctx.tier);
+      const insured = d.fields.insured ?? "";
+      if (!insured.trim()) return notRead("insured name", "certificate of insurance");
+      const m = bestMatch(insured, [ctx.sub.legal_name, ctx.sub.trade_name], ctx.policy.name_equivalences, ctx.sub.constitution);
+      if (m.verdict === "mismatch")
+        return fail("fraud", "DOC_NAME_MISMATCH", `Certificate of insurance is for "${insured}", not "${ctx.sub.legal_name}"`, {
+          evidence: { on_document: insured, on_form: ctx.sub.legal_name, similarity: m.score },
+        });
+      if (m.verdict === "near")
+        return fail("needs_review", "DOC_NAME_NEAR_MATCH", `Insured "${insured}" is close to, but not the same as, "${m.against}"`, {
+          evidence: { on_document: insured, on_form: m.against, similarity: m.score },
+        });
+      const until = parseDate(d.fields.valid_until);
+      if (!until) return notRead("policy expiry date", "certificate of insurance");
+      const days = Math.floor((until.getTime() - ctx.asOf.getTime()) / DAY);
+      if (days < 0)
+        return fail("vendor_fixable", "INSURANCE_EXPIRED", `Insurance policy expired on ${fmtDate(until)}`, {
+          vendor_message: `The insurance policy on your certificate expired on ${fmtDate(until)}. Please send a current certificate of insurance.`,
+          evidence: { valid_until: fmtDate(until) },
+        });
+      const amount = Number(String(d.fields.general_liability ?? "").replace(/[^0-9.]/g, ""));
+      if (!amount) return notRead("general liability limit", "certificate of insurance");
+      const cur = (d.fields.currency || "USD").toUpperCase().trim() as Currency;
+      const ev: Record<string, string | number> = { insured, insurer: d.fields.insurer ?? "", general_liability: fmtMoney(amount, cur), valid_until: fmtDate(until) };
+      // The strictest requirement that applies decides.
+      const same = reqs.filter((r) => r.currency === cur).sort((a, b) => b.min_liability - a.min_liability);
+      if (reqs.length && !same.length)
+        return fail("needs_review", "INSURANCE_CURRENCY", `Cover is ${fmtMoney(amount, cur)}, but the requirement is set in ${reqs[0].currency}; a person should compare`, { evidence: ev });
+      const top = same[0];
+      if (top && amount < top.min_liability)
+        return fail("vendor_fixable", "INSURANCE_COVERAGE_LOW",
+          `General liability is ${fmtMoney(amount, cur)}; the requirement for ${describeScope(top)} is ${fmtMoney(top.min_liability, cur)}`, {
+            vendor_message: `Your certificate of insurance shows ${fmtMoney(amount, cur)} general liability per occurrence. We need at least ${fmtMoney(top.min_liability, cur)}. Please send an updated certificate once your cover is increased.`,
+            evidence: { ...ev, required: fmtMoney(top.min_liability, cur), requirement: top.text },
+          });
+      if (days < 30) return warn(`Cover ${fmtMoney(amount, cur)} is enough, but the policy expires on ${fmtDate(until)}, in ${days} days`, ev);
+      return pass(`General liability ${fmtMoney(amount, cur)}${top ? ` meets the ${fmtMoney(top.min_liability, cur)} minimum` : ""}; insured name matches; valid to ${fmtDate(until)}`, ev);
     },
   },
 ];

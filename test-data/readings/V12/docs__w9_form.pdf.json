@@ -9,9 +9,9 @@
     "signature_date": "2026-10-30",
     "tin": "46-9032477"
   },
-  "confidence": 0.99,
+  "confidence": 1,
   "source": "ai",
-  "notes": "Specimen Form W-9 document.",
-  "ms": 21531,
-  "model": "gemini-3.6-flash"
+  "notes": "gemini-3.6-flash was busy, read by gemini-3-flash-preview. Specimen document for software testing.",
+  "ms": 6777,
+  "model": "gemini-3-flash-preview"
 }

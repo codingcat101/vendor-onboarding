@@ -104,7 +104,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(KEY);
-      if (raw) setState({ ...initial, ...JSON.parse(raw) });
+      if (raw) {
+        const saved = JSON.parse(raw);
+        // Sandboxes saved before plain-English requirements existed get the default ones.
+        if (saved.policy && !saved.policy.requirements) saved.policy.requirements = DEFAULT_POLICY.requirements;
+        setState({ ...initial, ...saved });
+      }
     } catch {
       /* private mode or blocked storage: start fresh, still works in memory */
     }

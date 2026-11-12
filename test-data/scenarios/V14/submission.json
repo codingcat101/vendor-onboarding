@@ -1,0 +1,30 @@
+{
+  "scenario_id": "V14",
+  "legal_name": "Pinecrest IT Solutions LLC",
+  "trade_name": "Pinecrest IT",
+  "constitution": "Limited Liability Company",
+  "country": "US",
+  "address": {
+    "line1": "500 West 2nd Street",
+    "city": "Austin",
+    "state": "Texas",
+    "pincode": "78701"
+  },
+  "tax_id": "884069125",
+  "contact": {
+    "name": "Jordan Ellis",
+    "email": "vendors@pinecrestit.example",
+    "phone": "+1 512 555 0163"
+  },
+  "bank": {
+    "account_holder": "PINECREST IT SOLUTIONS LLC",
+    "account_number": "42777697341",
+    "ifsc": "046323961",
+    "bank_name": "Lakeshore Specimen Bank (fictional)"
+  },
+  "documents": {
+    "w9_form": "docs/w9_form.pdf",
+    "cancelled_cheque": "docs/cancelled_cheque.pdf",
+    "insurance_certificate": "docs/insurance_certificate.pdf"
+  }
+}

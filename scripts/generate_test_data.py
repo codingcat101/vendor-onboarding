@@ -347,7 +347,7 @@ def us_vendor(legal, trade, constitution, street, city, state, zipc, tin, contac
                           ifsc=aba_routing("04"), bank_name="Lakeshore Specimen Bank (fictional)"))
 
 
-us_docs = {"w9_form": "w9", "cancelled_cheque": "bankletter_us"}
+us_docs = {"w9_form": "w9", "cancelled_cheque": "bankletter_us", "insurance_certificate": "coi_ins"}
 S["V11"] = dict(
     title="US 1 — Ohio LLC paid by ACH: W-9, EIN and bank letter all agree",
     invite=dict(buyer="Priya Nair (Procurement)", category="Electrical supplies", annual_spend_inr=2_500_000, data_access=False),
@@ -355,6 +355,7 @@ S["V11"] = dict(
                    "Cleveland", "Ohio", "44114", ein(), "Megan Kowalski", "ap@brightwatersupply.example", "+1 216 555 0142",
                    "BRIGHTWATER INDUSTRIAL SUPPLY LLC"),
     docs=us_docs, w9=dict(entity="LLC (S corporation)", signed="2026-10-21"),
+    ins=dict(limit=1_000_000, policy="GL-SPC-4417302", eff="2026-07-01", exp="2027-06-30"),
     expected=dict(tier="STANDARD", status="APPROVED", reasons=[]),
 )
 S["V12"] = dict(
@@ -363,6 +364,7 @@ S["V12"] = dict(
     form=us_vendor("Harborline Logistics Inc.", "Harborline", "Corporation", "40 East Bay Street", "Savannah", "Georgia",
                    "31401", ein(), "Daniel Reyes", "billing@harborline.example", "+1 912 555 0177", "HARBORLINE LOGISTICS INC"),
     docs=us_docs, w9=dict(entity="C corporation", signed="2026-10-30"), letter_holder="COASTAL LEDGER HOLDINGS LLC",
+    ins=dict(limit=2_000_000, policy="GL-SPC-5520918", eff="2026-03-01", exp="2027-02-28"),
     expected=dict(tier="STANDARD", status="REJECTED", reasons=["BANK_NAME_MISMATCH"]),
 )
 S["V13"] = dict(
@@ -372,7 +374,20 @@ S["V13"] = dict(
                    "Tucson", "Arizona", "85719", ein(), "Ana Whitfield", "orders@sabelridge.example", "+1 520 555 0119",
                    "SABEL RIDGE TRADING LLC"),
     docs=us_docs, w9=dict(entity="LLC (partnership)", signed="2026-11-02"),
+    ins=dict(limit=1_000_000, policy="GL-SPC-6031175", eff="2026-09-15", exp="2027-09-14"),
     expected=dict(tier="LOW", status="PENDING_INTERNAL", reasons=["POSSIBLE_WATCHLIST_MATCH"]),
+)
+S["V14"] = dict(
+    title="US 4 — Certificate of insurance shows $500K general liability; US vendors need at least $1M",
+    invite=dict(buyer="Priya Nair (Procurement)", category="IT services / data analytics", annual_spend_inr=3_000_000, data_access=False),
+    form=us_vendor("Pinecrest IT Solutions LLC", "Pinecrest IT", "Limited Liability Company", "500 West 2nd Street", "Austin", "Texas",
+                   "78701", ein(), "Jordan Ellis", "vendors@pinecrestit.example", "+1 512 555 0163", "PINECREST IT SOLUTIONS LLC"),
+    docs=us_docs, w9=dict(entity="LLC (C corporation)", signed="2026-10-28"),
+    ins=dict(limit=500_000, policy="GL-SPC-7184420", eff="2026-05-01", exp="2027-04-30"),
+    fix={"insurance_certificate": "coi_ins@raised"},
+    fix_ins=dict(limit=1_000_000, policy="GL-SPC-7184420-E1", eff="2026-11-10", exp="2027-04-30"),
+    expected=dict(tier="STANDARD", status="PENDING_VENDOR", reasons=["INSURANCE_COVERAGE_LOW"],
+                  after_fix=dict(status="APPROVED", reasons=[])),
 )
 
 # ----------------------------------------------------------------------------
@@ -693,6 +708,62 @@ def render_w9(c, f):
     watermark(c)
 
 
+def money(n):
+    return f"${n:,.0f}"
+
+
+def render_coi_ins(c, f):
+    i = DOCX["ins"]
+    a = f["address"]
+    c.setFont("Helvetica-Bold", 15)
+    c.drawString(18 * mm, H - 24 * mm, "CERTIFICATE OF LIABILITY INSURANCE")
+    c.setFont("Helvetica", 8)
+    c.drawString(18 * mm, H - 29 * mm, "SPECIMEN layout · This certificate is issued as a matter of information only and confers no rights upon the holder.")
+    c.drawRightString(W - 18 * mm, H - 24 * mm, f"Date issued: {i['eff'][5:7]}/{i['eff'][8:10]}/{i['eff'][:4]}")
+    y = kv_table(c, 18 * mm, H - 36 * mm, [
+        ("Producer", "Northline Specimen Insurance Brokers (fictional), Chicago, IL"),
+        ("Insured", f["legal_name"]),
+        ("Insured address", f"{a['line1']}, {a['city']}, {a['state']} {a['pincode']}"),
+        ("Insurer A", "Granite Specimen Casualty Co. (fictional)  NAIC #00000"),
+    ], label_w=42 * mm, width=174 * mm)
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(18 * mm, y - 9 * mm, "COVERAGES")
+    rows = [
+        ("Commercial general liability", i["policy"], i["eff"], i["exp"], [("Each occurrence", money(i["limit"])), ("General aggregate", money(2 * i["limit"])), ("Products agg", money(2 * i["limit"]))]),
+        ("Automobile liability", "AU-SPC-" + i["policy"][-7:], i["eff"], i["exp"], [("Combined single", "$1,000,000")]),
+        ("Umbrella liability", "Not covered", "", "", [("Each occurrence", "—")]),
+        ("Workers compensation", "WC-SPC-" + i["policy"][-7:], i["eff"], i["exp"], [("Per statute", "Yes"), ("E.L. each accident", "$500,000")]),
+    ]
+    yy = y - 16 * mm
+    c.setFont("Helvetica-Bold", 8)
+    for x, h in [(18, "TYPE OF INSURANCE"), (70, "POLICY NUMBER"), (106, "POLICY EFF"), (126, "POLICY EXP"), (148, "LIMITS")]:
+        c.drawString(x * mm, yy, h)
+    yy -= 2 * mm
+    c.line(18 * mm, yy, W - 18 * mm, yy)
+    for typ, pol, eff, exp, limits in rows:
+        yy -= 5 * mm
+        c.setFont("Helvetica-Bold", 8.5)
+        c.drawString(18 * mm, yy, typ)
+        c.setFont("Helvetica", 8.5)
+        c.drawString(70 * mm, yy, pol)
+        fmt = lambda d: f"{d[5:7]}/{d[8:10]}/{d[:4]}" if d else ""
+        c.drawString(106 * mm, yy, fmt(eff))
+        c.drawString(126 * mm, yy, fmt(exp))
+        for k, (lab, val) in enumerate(limits):
+            c.drawString(148 * mm, yy - k * 4.5 * mm, lab)
+            c.drawRightString(W - 18 * mm, yy - k * 4.5 * mm, val)
+        yy -= max(1, len(limits)) * 4.5 * mm + 1.5 * mm
+        c.line(18 * mm, yy + 1.5 * mm, W - 18 * mm, yy + 1.5 * mm)
+    c.setFont("Helvetica-Bold", 9)
+    c.drawString(18 * mm, yy - 8 * mm, "CERTIFICATE HOLDER")
+    c.setFont("Helvetica", 9)
+    c.drawString(18 * mm, yy - 13 * mm, "Buyer company (fictional), Accounts Payable, Vendor Management")
+    c.drawString(120 * mm, yy - 13 * mm, "Authorized representative:")
+    c.setFont("Times-Italic", 13)
+    c.drawString(120 * mm, yy - 20 * mm, "Specimen Agent")
+    watermark(c)
+
+
 def render_bankletter_us(c, f):
     b = f["bank"]
     holder = DOCX.get("letter_holder") or b["account_holder"]
@@ -716,7 +787,7 @@ def render_bankletter_us(c, f):
 
 
 RENDER = {"seccert": render_seccert, "bankletter": render_bankletter, "gst": render_gst, "pan": render_pan, "cheque": render_cheque, "coi": render_coi,
-          "invoice": render_invoice, "w9": render_w9, "bankletter_us": render_bankletter_us}
+          "invoice": render_invoice, "w9": render_w9, "bankletter_us": render_bankletter_us, "coi_ins": render_coi_ins}
 
 
 def pdf_bytes(kind, form):
@@ -793,6 +864,9 @@ def ground_truth(slot, spec, form):
     if kind == "seccert":
         return dict(doc_type="security_certificate", holder=form["legal_name"].upper(), standard="ISO/IEC 27001:2022",
                     certificate_number=CERT["number"], valid_until=CERT["valid_until"])
+    if kind == "coi_ins":
+        i = DOCX["ins"]
+        return dict(doc_type="insurance_certificate", insured=form["legal_name"], general_liability=str(i["limit"]), currency="USD", valid_until=i["exp"])
     if kind == "w9":
         return dict(doc_type="w9_form", legal_name=form["legal_name"], business_name=form.get("trade_name", ""),
                     tin=fmt_ein(form["tax_id"]), signature_date=DOCX["w9"]["signed"])
@@ -819,7 +893,7 @@ def main():
         uploaded, truth = {}, {}
         for slot, spec in s["docs"].items():
             CERT.clear(); CERT.update(s.get("cert", {}))
-            DOCX.clear(); DOCX.update(w9=s.get("w9"), letter_holder=s.get("letter_holder"))
+            DOCX.clear(); DOCX.update(w9=s.get("w9"), letter_holder=s.get("letter_holder"), ins=s.get("ins"))
             name = write_doc(folder / "docs", slot, spec, form)
             uploaded[slot] = f"docs/{name}"
             truth[f"docs/{name}"] = ground_truth(slot, spec, form)
@@ -827,6 +901,7 @@ def main():
         for slot, spec in s.get("fix", {}).items():
             (folder / "fix").mkdir(exist_ok=True)
             CERT.clear(); CERT.update(s.get("fix_cert", s.get("cert", {})))
+            DOCX.clear(); DOCX.update(w9=s.get("w9"), letter_holder=s.get("letter_holder"), ins=s.get("fix_ins", s.get("ins")))
             name = write_doc(folder / "fix", slot, spec, form)
             fixes[slot] = f"fix/{name}"
             truth[f"fix/{name}"] = ground_truth(slot, spec, form)

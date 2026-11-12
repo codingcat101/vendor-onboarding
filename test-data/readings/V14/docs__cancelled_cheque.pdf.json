@@ -1,0 +1,16 @@
+{
+  "slot": "cancelled_cheque",
+  "file": "docs/cancelled_cheque.pdf",
+  "doc_type": "bank_letter",
+  "fields": {
+    "account_holder": "PINECREST IT SOLUTIONS LLC",
+    "account_number": "42777697341",
+    "bank_name": "LAKESHORE SPECIMEN BANK (fictional bank)",
+    "ifsc": "046323961"
+  },
+  "confidence": 0.95,
+  "source": "ai",
+  "notes": "Fictional specimen bank account verification letter.",
+  "ms": 10678,
+  "model": "gemini-3.6-flash"
+}

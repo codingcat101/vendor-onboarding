@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useStore } from "@/lib/client/store";
 import { HARD_CODES, HARD_LABEL } from "@/lib/engine/policy";
 import { DOC_LABEL } from "@/lib/engine/types";
+import { RequirementsPanel } from "@/components/RequirementsPanel";
 import { Section, fmtTime, inr } from "@/components/ui";
 
 
@@ -43,6 +44,8 @@ export default function PolicyPage() {
           {[...HARD_CODES].map((c) => <li key={c}>{(HARD_LABEL[c] ?? c).replace(/^./, (x) => x.toUpperCase())}</li>)}
         </ul>
       </Section>
+
+      <RequirementsPanel />
 
       <Section title="Change history" className="lg:col-span-2">
         <ol className="grid gap-3 text-[14px]">

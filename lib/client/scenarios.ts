@@ -27,6 +27,7 @@ export const SAMPLE_BLURB: Record<string, { name: string; what: string }> = {
   V11: { name: "Brightwater Industrial Supply (US)", what: "Ohio LLC paid by ACH: W-9, EIN and bank letter all agree" },
   V12: { name: "Harborline Logistics (US)", what: "W-9 is in its name, but the bank letter is for another company" },
   V13: { name: "Sabel Ridge Trading (US)", what: "Name is close to an entry on the sanctions watchlist" },
+  V14: { name: "Pinecrest IT Solutions (US)", what: "Insurance shows $500K liability; US vendors need $1M" },
 };
 
 let cache: SampleScenario[] | null = null;

@@ -11,9 +11,9 @@ export type Severity =
 
 export type Outcome = "pass" | "fail" | "warn" | "skip";
 
-export type DocSlot = "gst_certificate" | "pan_card" | "w9_form" | "cancelled_cheque" | "incorporation_certificate" | "security_certificate";
+export type DocSlot = "gst_certificate" | "pan_card" | "w9_form" | "cancelled_cheque" | "incorporation_certificate" | "security_certificate" | "insurance_certificate";
 
-export const ALL_DOC_SLOTS: DocSlot[] = ["gst_certificate", "pan_card", "w9_form", "cancelled_cheque", "incorporation_certificate", "security_certificate"];
+export const ALL_DOC_SLOTS: DocSlot[] = ["gst_certificate", "pan_card", "w9_form", "cancelled_cheque", "incorporation_certificate", "security_certificate", "insurance_certificate"];
 
 export const COUNTRY_NAME: Record<string, string> = { IN: "India", US: "the United States", GB: "the United Kingdom" };
 
@@ -21,6 +21,7 @@ export const DOC_LABEL: Record<DocSlot, string> = {
   gst_certificate: "GST registration certificate",
   pan_card: "PAN card",
   w9_form: "IRS Form W-9",
+  insurance_certificate: "Certificate of insurance",
   cancelled_cheque: "Cancelled cheque",
   incorporation_certificate: "Certificate of incorporation",
   security_certificate: "Security certificate (ISO 27001 or SOC 2)",

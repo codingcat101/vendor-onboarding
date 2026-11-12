@@ -10,7 +10,7 @@
   },
   "confidence": 1,
   "source": "ai",
-  "notes": "gemini-3.6-flash was busy, read by gemini-3-flash-preview. Fictional specimen bank account verification letter.",
-  "ms": 10720,
+  "notes": "gemini-3.6-flash was busy, read by gemini-3-flash-preview. Fictional specimen document.",
+  "ms": 6963,
   "model": "gemini-3-flash-preview"
 }

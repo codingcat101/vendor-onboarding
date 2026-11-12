@@ -1,0 +1,18 @@
+{
+  "slot": "insurance_certificate",
+  "file": "fix/insurance_certificate.pdf",
+  "doc_type": "insurance_certificate",
+  "fields": {
+    "currency": "USD",
+    "general_liability": "1000000",
+    "insured": "Pinecrest IT Solutions LLC",
+    "insurer": "Granite Specimen Casualty Co. (fictional)",
+    "policy_number": "GL-SPC-7184420-E1",
+    "valid_until": "2027-04-30"
+  },
+  "confidence": 1,
+  "source": "ai",
+  "notes": "Fictional specimen certificate of liability insurance.",
+  "ms": 6351,
+  "model": "gemini-3.6-flash"
+}
