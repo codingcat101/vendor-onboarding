@@ -22,6 +22,7 @@ Regenerate with `python3 scripts/generate_test_data.py` (seeded, so output is st
 | V11 | Standard | Brightwater Industrial Supply LLC (Ohio, US) — **W-9** + ACH bank letter; EIN, name and routing number (ABA checksum) all agree | **Approved** | — |
 | V12 | Standard | Harborline Logistics Inc. (Georgia, US) — W-9 is in its own name, but the **bank letter is for "Coastal Ledger Holdings LLC"** | **Rejected** — bank account in another name (payment-redirection pattern) | Guardrail: can't be taught or overridden |
 | V13 | Low | Sabel Ridge Trading LLC (Arizona, US) — name is 99% similar to **"Sable Ridge Trading Co"** on the specimen sanctions watchlist | **Pending (internal)** — possible watchlist match | A named reviewer compares the details and clears it with a reason; no rule can ever clear it |
+| V14 | Standard | Pinecrest IT Solutions LLC (Texas, US) — certificate of insurance shows **$500,000** general liability per occurrence; US vendors need **$1M** (requirement R1) | **Pending (vendor)** — cover below the minimum | Vendor uploads `fix/insurance_certificate.pdf` ($1M) → only the insurance checks re-run → Approved |
 | V08 | Standard | Lotus Print House — **cancelled cheque missing**; PAN card is an image-only scan | **Pending (vendor)** — missing document | Vendor goes silent → day 2 reminder → day 5 escalate to buyer → day 10 expired (fix file available if you want to show recovery instead) |
 
 ## Files
@@ -41,4 +42,4 @@ Regenerate with `python3 scripts/generate_test_data.py` (seeded, so output is st
 | Standard | ₹5L – ₹1Cr | + PAN card | Auto if all checks pass |
 | Strategic | > ₹1Cr **or** data/system access | + Certificate of incorporation (+ ISO 27001 / SOC 2 if data access) | Human sign-off always |
 
-Outside India the GST certificate and PAN card are not asked for; a bank letter is accepted for the cheque. **US vendors** always add an IRS **Form W-9** (legal name, EIN, signature), checked against the form.
+Outside India the GST certificate and PAN card are not asked for; a bank letter is accepted for the cheque. **US vendors** always add an IRS **Form W-9** (legal name, EIN, signature), checked against the form, and a **certificate of insurance** with at least $1M general liability (requirement R1, editable in plain English on the Rules page). V11–V13 carry certificates of $1M, $2M and $1M.

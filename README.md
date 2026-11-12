@@ -10,17 +10,19 @@ This project is a working onboarding process that takes a vendor's form and docu
 
 It works for Indian vendors in depth (GSTIN, PAN, IFSC, cancelled cheque), for **US vendors** (IRS Form W-9, EIN, ACH routing number, bank verification letter) and for UK vendors (VAT, IBAN). Every vendor is screened against a sanctions watchlist, and a possible hit always goes to a named person.
 
-On 37 test documents from all three countries, the AI identified every document type and read 123 of 124 fields correctly (99.2%), at about 7 seconds per document. All 13 sample vendors reach the expected decision from real AI readings, both first time and after the vendor's fix (16 of 16 decisions). 64 automated tests cover the checks, the fix loop, the teaching and the guardrails, and a **governance page** in the app recomputes these evals live and shows what each agent is allowed to do on its own.
+Procurement sets the requirements in **plain English** ("require $1M liability coverage for all IT vendors"); the AI turns the sentence into a structured rule, code checks it can only tighten controls, a dry run shows which cases it would change, and a person approves it. Certificates of insurance are read and checked against those minimums: a vendor with $500K cover when $1M is required is asked for an updated certificate automatically.
+
+On 44 test documents from all three countries, the AI identified every document type and read 150 of 151 fields correctly (99.3%), at about 6 seconds per document. All 14 sample vendors reach the expected decision from real AI readings, both first time and after the vendor's fix (18 of 18 decisions). 73 automated tests cover the checks, the fix loop, the teaching and the guardrails, and a **governance page** in the app recomputes these evals live and shows what each agent is allowed to do on its own.
 
 ### The five capabilities of an onboarding agent, and where each one lives here
 
 | Capability | In this project | See it in the app | Next step |
 |---|---|---|---|
-| **Adaptive intake and document chasing** | The tier decides which documents are asked for (W-9 for US vendors, ISO 27001 / SOC 2 for data access); the vendor's fix page shows only what's wrong; the follow-up agent reminds on day 2, escalates on day 5, closes on day 10 | Lotus Print House → "+3 days"; Ganga Office Supplies fix page | Real email and WhatsApp, replies parsed automatically |
-| **Multi-field validation and fraud prevention** | AI reads documents blind; 28 checks (9 to 24 apply to a given vendor) cross-reference every field; shared bank accounts, borrowed tax IDs and third-party bank accounts are rejected; sanctions watchlist screen | Orion Engineering (borrowed GSTIN), Harborline (bank letter in another company's name), Sabel Ridge (watchlist) | Live OFAC SDN and Consolidated Screening lists; IRS TIN Matching; GST portal; penny-drop |
+| **Adaptive intake and document chasing** | The tier and the requirements decide which documents are asked for (W-9 and certificate of insurance for US vendors, ISO 27001 / SOC 2 for data access); the vendor's fix page shows only what's wrong; the follow-up agent reminds on day 2, escalates on day 5, closes on day 10 | Lotus Print House → "+3 days"; Ganga Office Supplies fix page | Real email and WhatsApp, replies parsed automatically |
+| **Multi-field validation and fraud prevention** | AI reads documents blind, in any layout; 29 checks (9 to 24 apply to a given vendor) cross-reference every field; insurance cover checked against the minimum and expiry; shared bank accounts, borrowed tax IDs and third-party bank accounts are rejected; sanctions watchlist screen | Orion Engineering (borrowed GSTIN), Harborline (bank letter in another company's name), Sabel Ridge (watchlist), Pinecrest IT ($500K cover vs $1M) | Live OFAC SDN and Consolidated Screening lists; IRS TIN Matching; GST portal; penny-drop |
 | **Risk-based routing** | Low / Standard / Strategic tiers set at invite from spend and data access; only grey areas reach a person; strategic vendors always need a sign-off | Invite page; Review queue | Customer-specific tier thresholds and approval chains |
 | **ERP master data creation** | A clean vendor record draft (CSV / JSON) for every case, with an evidence checklist and exceptions | "Prepared for review" on any case | Direct write to the ERP's vendor master by API (NetSuite, SAP, Oracle) after approval |
-| **Audit trails and agent governance** | Every check, message, decision and rule change is logged with who and why; an operating procedure lists what each agent may do alone; live evals and guardrail probes | Case activity log; Rules; **Governance** | Persisted, tamper-evident audit log; evals run on every policy change |
+| **Audit trails and agent governance** | Requirements written in plain English and enforced as code; every check, message, decision and rule change is logged with who and why; an operating procedure lists what each agent may do alone; live evals and guardrail probes | Rules (add a requirement); case activity log; **Governance** | Persisted, tamper-evident audit log; evals run on every policy change |
 
 ---
 
@@ -53,6 +55,8 @@ Every arrow is a person. The loop between "check" and "email vendor" can run sev
 | Inbox as audit trail | "Why did we approve this vendor?" | No record of evidence or reasoning |
 | Sanctions exposure (US) | A vendor whose name is one letter away from a listed party | Long lists, fuzzy names; most hits are false positives, so someone must judge each one |
 | Payment redirection (US) | W-9 in the vendor's name, bank letter for a different company | Each document looks fine on its own |
+| Insurance below the minimum or expired | Certificate shows $500K general liability; policy needs $1M | Every insurer's certificate looks different; the right number is one line in a table of limits |
+| Rules live in people's heads | "IT vendors need $1M cover" is in an email from legal | Nobody applies it consistently, and nobody can show when it started |
 
 ### 2.3 Root causes
 
@@ -168,6 +172,7 @@ Outside India, a bank letter replaces the cancelled cheque and GST/PAN documents
 | Cross-reference | Cheque matches bank details | Typo in account number | Vendor fix → `DOC_BANK_MISMATCH` |
 | Cross-reference | Bank account holder is the vendor | Payments going to a third party | **Fraud → `BANK_NAME_MISMATCH`**; Review → `BANK_NAME_NEAR_MATCH` |
 | Cross-reference | W-9 matches the form (US) | EIN on the W-9 differs from the form; W-9 in another name; unsigned | Vendor fix → `W9_TIN_MISMATCH`, `W9_UNSIGNED`; **Fraud → `DOC_NAME_MISMATCH`**; Review → `DOC_NAME_NEAR_MATCH` |
+| Compliance | Certificate of insurance (when a requirement applies) | Cover below the strictest applicable minimum; expired policy; insured is another company | Vendor fix → `INSURANCE_COVERAGE_LOW`, `INSURANCE_EXPIRED`; Review → `INSURANCE_CURRENCY`; **Fraud → `DOC_NAME_MISMATCH`** |
 | Compliance | Security certificate (data-access vendors) | Wrong standard, expired, or issued to another company | Vendor fix → `SECURITY_CERT_WRONG_STANDARD`, `SECURITY_CERT_EXPIRED`; Review → `SECURITY_CERT_NAME_MISMATCH` (may be a group certificate); expiring within 90 days → note |
 | Fraud screen | Bank account not used by another vendor | Classic fake-vendor pattern | **Fraud → `BANK_ACCOUNT_SHARED`** |
 | Fraud screen | GSTIN / PAN not on file for another vendor | Borrowed identity; duplicate vendor | **Fraud → `GSTIN_BELONGS_TO_OTHER_VENDOR`, `PAN_BELONGS_TO_OTHER_VENDOR`**; Review → `DUPLICATE_VENDOR` |
@@ -309,6 +314,18 @@ flowchart TD
 6. An AI-drafted message is used only if it keeps the fix link; otherwise a plain template is sent.
 7. A possible sanctions match always goes to a named person, who must give a reason. It can't be taught, and the screen deliberately ignores taught name rules, so a rule written for one purpose can't quietly clear a sanctions hit.
 
+### 9.0 Requirements written in plain English
+
+Teaching handles exceptions a reviewer meets on a case. Requirements are the rules procurement sets up front. On the Rules page they type one in plain English, for example *"Require $1M liability coverage for all IT vendors"*:
+
+1. **Guardrail before any AI:** a sentence that would loosen controls ("skip", "waive", "auto-approve", "lower"…) is refused in code. Requirements can only add or raise checks.
+2. **AI interprets:** amount and currency ($1M, ₹1 crore, £2m), which vendor categories, countries and tiers. If the AI is unavailable, a keyword parser does it.
+3. **Code validates:** known categories only, a plausible amount, a stated scope ("for IT vendors", "for all vendors"), not already covered by a stricter requirement.
+4. **Dry run:** which open cases would change (e.g. *Nimbus Analytics: Pending: review → Pending: vendor, certificate of insurance missing*) and which approved vendors would be asked at renewal. Approvals already made are not undone.
+5. **A person approves:** the policy version goes up, open cases are re-checked, and affected vendors are asked for exactly what's missing.
+
+The requirement is stored as structured data next to the sentence it came from, so anyone can see both what was asked and exactly how it is enforced. When several requirements apply, the strictest minimum wins.
+
 ### 9.1 Agent governance: what each agent may do, and how we know it works
 
 Agents that act on their own need the same controls as a new employee: a written list of what they may do alone, what needs a person, and what nobody can do; and evidence that they keep doing it right. The **Governance** page in the app shows both.
@@ -320,17 +337,17 @@ Agents that act on their own need the same controls as a new employee: a written
 | Ask the vendor to fix something; chase a silent vendor | Follow-up agent | On its own; can't approve or reject |
 | Approve a low or standard-risk vendor | Decision rules | On its own, only if every check passes |
 | Approve a strategic vendor; clear a possible sanctions match | A named reviewer | Needs a person, with a reason |
-| Change the rules | AI proposes, reviewer approves | Needs a person; guardrails, dry run, version history |
+| Change the rules (taught exceptions, plain-English requirements) | AI proposes, a person approves | Needs a person; guardrails, dry run, version history |
 | Create the vendor in the ERP | Finance | Needs a person (v1: CSV / JSON; v2: API write) |
 | Override a fraud check | Nobody | Never |
 
-The page recomputes, on every visit, from the recorded AI readings: decision accuracy on every sample (16 of 16), reading accuracy per document type, **8 guardrail probes** (teach an exception on a fraud case, teach away a sanctions hit, a rule that names a vendor, a rule that makes another company count as the vendor, AI down, AI misses a field, strategic vendor without sign-off), and whether repeat runs give identical results. It also shows what the agents did in the visitor's own sandbox: cases decided with no person, documents read live vs from recorded readings, messages drafted by AI vs template, and every rule change with who approved it.
+The page recomputes, on every visit, from the recorded AI readings: decision accuracy on every sample (18 of 18), reading accuracy per document type, **9 guardrail probes** (teach an exception on a fraud case, teach away a sanctions hit, a rule that names a vendor, a rule that makes another company count as the vendor, a plain-English requirement that loosens controls, AI down, AI misses a field, strategic vendor without sign-off), and whether repeat runs give identical results. It also shows what the agents did in the visitor's own sandbox: cases decided with no person, documents read live vs from recorded readings, messages drafted by AI vs template, and every rule change with who approved it.
 
 ---
 
 ## 10. Edge cases
 
-All 13 sample vendors are in the live app ("Sample vendors" panel). Companies, people and identifiers are fictional; every document is marked SPECIMEN. Details: [test-data/README.md](test-data/README.md).
+All 14 sample vendors are in the live app ("Sample vendors" panel). Companies, people and identifiers are fictional; every document is marked SPECIMEN. Details: [test-data/README.md](test-data/README.md).
 
 | # | Scenario | What makes it hard | Outcome | Shows |
 |---|---|---|---|---|
@@ -347,27 +364,29 @@ All 13 sample vendors are in the live app ("Sample vendors" panel). Companies, p
 | V11 | US LLC (Ohio) paid by ACH | W-9, EIN, routing checksum and bank letter must all agree | Approved | US intake |
 | V12 | US corporation: W-9 in its own name, bank letter for "Coastal Ledger Holdings LLC" | Each document is valid on its own | Rejected; can't be taught | Payment-redirection guardrail |
 | V13 | US LLC whose name is 99% similar to a listed party | Probably a false positive, but only a person may decide | Pending: review; reviewer clears with a reason | Sanctions screening, human in the loop |
+| V14 | US IT vendor; certificate of insurance shows $500K general liability | The limit is one line in a table of several limits; the rest is clean | Pending: vendor (asked for $1M cover) → updated certificate → Approved | Insurance minimums, plain-English requirements |
 
 ---
 
 ## 11. Evidence and testing
 
-**AI reading accuracy.** Measured against hand-recorded correct values on 37 specimen documents (Indian, UK and US, including W-9s), including a tilted phone photo of a cheque and an image-only scan of a PAN card (`npx tsx scripts/eval-readings.ts`, results in `test-data/readings/accuracy.json`).
+**AI reading accuracy.** Measured against hand-recorded correct values on 44 specimen documents (Indian, UK and US, including W-9s and certificates of insurance), including a tilted phone photo of a cheque and an image-only scan of a PAN card (`npx tsx scripts/eval-readings.ts`, results in `test-data/readings/accuracy.json`).
 
 | Document type identified | Fields read correctly | Average time per document |
 |---|---|---|
-| 37 / 37 (100%) | 123 / 124 (99.2%) | 7.2 s |
+| 44 / 44 (100%) | 150 / 151 (99.3%) | 6.2 s |
 
 The same numbers, per document type, are recomputed live on the app's Governance page.
 
-**Automated tests: 64** (`npm test`).
+**Automated tests: 73** (`npm test`).
 
 | Suite | Tests | Covers |
 |---|---|---|
 | `ids.test.ts` | 12 | GSTIN check digit on published samples, PAN, IFSC registry, UK VAT, IBAN, US routing, name matching |
-| `scenarios.test.ts` | 33 | Every sample's decision, fix loop, incremental re-checks, teaching, guardrails, tiers, AI failures, W-9, sanctions screen |
+| `scenarios.test.ts` | 34 | Every sample's decision, fix loop, incremental re-checks, teaching, guardrails, tiers, AI failures, W-9, sanctions screen |
 | `teach.test.ts` | 6 | Rule building, guardrails, reading the reviewer's note |
-| `ai-readings.test.ts` | 13 | Every sample decided correctly from the **real** recorded AI readings |
+| `ai-readings.test.ts` | 14 | Every sample decided correctly from the **real** recorded AI readings |
+| `requirements.test.ts` | 7 | Insurance minimums, expiry and name; reading amounts like "$1M" and "₹1 crore"; plain-English requirements and their guardrails; strictest minimum wins |
 
 **Two real bugs found by testing, and fixed:**
 
@@ -420,7 +439,7 @@ monthly saving  =  vendors per month × reviewer minutes saved per vendor × loa
 
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
-| AI misreads a field | Low (99.2% measured) | Medium | Blind reading; every field cross-checked; an unread field goes to a person; confidence threshold |
+| AI misreads a field | Low (99.3% measured) | Medium | Blind reading; every field cross-checked; an unread field goes to a person; confidence threshold |
 | AI outage or quota exhausted | Medium | Medium | 3-model chain with timeouts; document routed to a person; paid tier in production |
 | A bad taught rule | Low | High | Code builds the rule; guardrails; preview of affected cases; human approval; versioned history |
 | Forged or edited documents | Medium | High | Cross-referencing catches borrowed identities; v2 adds verification at the source and forgery detection |
@@ -473,19 +492,20 @@ gantt
 npm install
 echo "GEMINI_API_KEY=your-key" > .env.local
 npm run dev        # http://localhost:3000
-npm test           # 64 tests
+npm test           # 73 tests
 ```
 
 **Two-minute demo** (each visitor gets a private sandbox; "Reset demo" starts over):
 
 1. **Cases → Ganga Office Supplies → Submit.** Watch the documents being read and the checks run; it's returned for a wrong document. Open the fix page, attach the correct file, and only 4 of 17 checks re-run.
-2. **Cases → Run all 13 at once**, then **Dashboard.**
+2. **Cases → Run all 14 at once**, then **Dashboard.**
 3. **Reviewer → Review queue → Sharma Trading Co.** Approve with a reason, add the suggested rule, and Gupta Trading Company is approved on its own.
 4. **Apex Facility Services → "Try to teach an exception anyway"** is refused.
 5. **Lotus Print House → "+3 days" three times:** reminder, escalation, closed.
 6. **Thames Precision Tools (UK):** wrong country's tax ID, fixed with a VAT number.
 7. **US vendors:** Harborline is rejected (bank letter for another company); Sabel Ridge waits for a reviewer to clear a possible sanctions match with a reason.
-8. **Governance:** the operating procedure, live evals and guardrail probes, and what the agents did in your sandbox.
+8. **Rules → "Require $1M liability coverage for all IT vendors":** see how it was understood and which cases it would change, then approve it; Nimbus is asked for a certificate of insurance. Try "Skip the insurance check for small vendors" too: refused.
+9. **Governance:** the operating procedure, live evals and guardrail probes, and what the agents did in your sandbox.
 
 ---
 
@@ -497,7 +517,7 @@ lib/client/          browser sandbox store, submission pipeline, follow-up agent
 app/                 pages (cases, invite, vendor form, case file, review, dashboard, messages, rules, governance)
 app/api/             read, run, draft, teach, scenarios, file, evals
 components/          shared UI, reviewer panel
-test-data/           13 sample vendors, documents, expected outcomes, recorded AI readings
+test-data/           14 sample vendors, documents, expected outcomes, recorded AI readings
 data/                vendor master; specimen sanctions watchlist; IFSC registry (Razorpay, MIT licence)
 scripts/             test-data generator, AI accuracy evaluation
 ```
