@@ -1,6 +1,6 @@
 # Vendor Onboarding: from submission to approval
 
-**Live app:** https://vendor-onboarding-gules-three.vercel.app/ · **Case study:** AI Solutions Analyst, problem statement 2
+**Live app:** https://vendor-onboarding-gules-three.vercel.app/ · **Case study:** AI Solutions Analyst, problem statement 2 · **By:** Aarchi Kothari, IIT Roorkee (23410001)
 
 ## 1. Executive summary
 
