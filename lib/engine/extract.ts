@@ -17,6 +17,7 @@ const PROMPT = `You are reading ONE document uploaded during vendor onboarding (
    gst_certificate, pan_card, w9_form (US IRS Form W-9), insurance_certificate (a certificate of liability insurance), cancelled_cheque, incorporation_certificate, security_certificate (an ISO 27001 certificate or SOC 2 report), invoice, bank_letter, purchase_order, aadhaar_card, other.
    Judge by content, not by any file name.
 2. Extract ONLY the fields that are visibly printed (leave others as empty strings). Copy values exactly; do not correct or guess.
+   Use exactly the field names listed for that doc_type below; never put a value in a field meant for another document type.
    - gst_certificate: gstin, legal_name, trade_name, state
    - pan_card: pan, name
    - insurance_certificate: insured (the insured business name), insurer, policy_number, general_liability (the general liability limit EACH OCCURRENCE, digits only, e.g. 1000000), currency (ISO code, e.g. USD), valid_until (policy expiry, YYYY-MM-DD)
@@ -98,19 +99,31 @@ export function saveReading(scenario: string, r: Reading) {
   fs.writeFileSync(p, JSON.stringify(r, null, 2));
 }
 
-/** Try each model in turn. */
+/** The fields without which a reading of that document type is not usable. */
+const KEY_FIELDS: Record<string, string[]> = {
+  gst_certificate: ["gstin"], pan_card: ["pan"], cancelled_cheque: ["account_number"], bank_letter: ["account_number"],
+  incorporation_certificate: ["cin"], security_certificate: ["holder", "valid_until"],
+  w9_form: ["legal_name", "tin"], insurance_certificate: ["insured", "general_liability", "valid_until"],
+};
+export const missingKeyFields = (r: Pick<Reading, "doc_type" | "fields">) => (KEY_FIELDS[r.doc_type] ?? []).filter((k) => !r.fields[k]?.trim());
+
+/** Try each model in turn. A reading that misses key fields counts as a miss: the next model tries. */
 export async function readLive(slot: DocSlot, file: string, bytes: Buffer, apiKey: string) {
   const errors: string[] = [];
+  let partial: Reading | null = null;
   for (const model of MODELS) {
     try {
       const r = await readWithGemini(slot, file, bytes, apiKey, model);
-      if (errors.length) r.notes = [`${MODELS[0]} was busy, read by ${model}`, r.notes].filter(Boolean).join(". ");
-      return { reading: r, errors };
+      if (errors.length) r.notes = [`${errors.join("; ")}; read by ${model}`, r.notes].filter(Boolean).join(". ");
+      const missing = missingKeyFields(r);
+      if (!missing.length) return { reading: r, errors, partial: null };
+      errors.push(`${model} missed ${missing.join(", ")}`);
+      if (!partial || missingKeyFields(partial).length > missing.length) partial = r;
     } catch (e) {
       errors.push((e as Error).name === "AbortError" ? `${model} timed out` : (e as Error).message.split(":")[0]);
     }
   }
-  return { reading: null, errors };
+  return { reading: null, errors, partial };
 }
 
 /** Read one document: live AI first, then the recorded reading, else "unreadable". */
@@ -119,10 +132,12 @@ export async function readDocument(opts: {
 }): Promise<Reading> {
   const { scenario, slot, file, bytes, apiKey } = opts;
   if (apiKey) {
-    const { reading, errors } = await readLive(slot, file, bytes, apiKey);
+    const { reading, errors, partial } = await readLive(slot, file, bytes, apiKey);
     if (reading) return reading;
     const cached = scenario ? cachedReading(scenario, slot, file) : null;
-    if (cached) return { ...cached, notes: `Live AI unavailable (${errors.join("; ")}). Used the AI reading recorded earlier.` };
+    if (cached) return { ...cached, notes: `Live AI ${partial ? "reading was incomplete" : "unavailable"} (${errors.join("; ")}). Used the AI reading recorded earlier.` };
+    // An incomplete reading is still returned: the checks send the missing fields to a person.
+    if (partial) return { ...partial, notes: [`Incomplete reading (${errors.join("; ")})`, partial.notes].filter(Boolean).join(". ") };
     return { slot, file, doc_type: "other", fields: {}, confidence: 0, source: "ai", error: `AI could not read the document right now (${errors.join("; ")})` };
   }
   const cached = scenario ? cachedReading(scenario, slot, file) : null;
